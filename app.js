@@ -339,9 +339,9 @@ function setupInteractions() {
     if (!item) return;
     const media = getMedia(item);
     const preview = media.type === 'embed'
-      ? `<iframe class="work-video" src="${safeHref(media.src)}" title="${escapeText(localized(item, 'title'))}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+      ? `<iframe class="work-video" src="${safeHref(media.src)}" title="${escapeText(localized(item, 'title'))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="eager"></iframe>`
       : media.type === 'video'
-        ? `<video class="work-video" src="${safeHref(media.src)}" poster="${item.image ? safeHref(item.image) : ''}" controls playsinline preload="metadata"></video>`
+        ? `<video class="work-video" src="${safeHref(media.src)}" poster="${item.image ? safeHref(item.image) : ''}" controls playsinline webkit-playsinline preload="metadata"></video>`
         : item.image
           ? `<img class="work-image" src="${safeHref(item.image)}" alt="${escapeText(localized(item, 'title'))}" />`
           : escapeText(item.icon || '▶');
@@ -350,6 +350,7 @@ function setupInteractions() {
     if (!detail || !dialog) return;
     detail.innerHTML = `<div class="work-detail-art" style="--art-mid:${safeColor(item.mid, '#82619b')};--art-deep:${safeColor(item.deep, '#282035')}">${preview}</div><div class="work-detail-copy"><span class="small-index">${escapeText(localized(item, 'tag'))}</span><h2>${escapeText(localized(item, 'title'))}</h2><p>${escapeText(localized(item, 'description'))}</p><a class="text-link" href="${safeHref(sourceUrl + '#gallery')}" target="_blank" rel="noreferrer">${escapeText(currentInterfaceText().galleryOriginal)}</a></div>`;
     dialog.showModal();
+    document.body.classList.add('gallery-modal-open');
   };
   const gallery = byId('gallery-grid');
   if (gallery) {
@@ -357,7 +358,7 @@ function setupInteractions() {
     gallery.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { const card = event.target.closest('.work-card'); if (card) { event.preventDefault(); showWork(card); } } });
   }
   const workDialog = byId('work-dialog');
-  if (workDialog) workDialog.addEventListener('close', () => { const detail = byId('work-detail'); if (detail) detail.innerHTML = ''; });
+  if (workDialog) workDialog.addEventListener('close', () => { document.body.classList.remove('gallery-modal-open'); const detail = byId('work-detail'); if (detail) detail.innerHTML = ''; });
   const ticker = document.querySelector('.airy-ticker');
   const tickerTrack = ticker?.querySelector('.airy-ticker-track');
   if (ticker && tickerTrack) {
