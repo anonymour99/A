@@ -184,8 +184,8 @@ function readDraft() {
 }
 
 const translationInterfaceDefaults = {
-  th: { home: 'หน้าหลัก', commission: 'Commission', queue: 'คิวงาน', gallery: 'My Little Gallery', tos: 'ข้อตกลง', back: '← หน้าแรก', contact: 'ติดต่อจองคิว ↗', details: 'สอบถามรายละเอียด ↗', addonName: 'รายการ', addonPrice: 'ราคาเริ่มต้น (THB)', galleryOriginal: 'เปิดแกลเลอรีต้นฉบับ ↗' },
-  en: { home: 'Home', commission: 'Commission', queue: 'Queue', gallery: 'My Little Gallery', tos: 'Terms', back: '← Home', contact: 'Book a commission ↗', details: 'Ask for details ↗', addonName: 'Add-on', addonPrice: 'Starting price (THB)', galleryOriginal: 'Open original gallery ↗' }
+  th: { home: 'หน้าหลัก', commission: 'Commission', queue: 'คิวงาน', gallery: 'My Little Gallery', tos: 'ข้อตกลง', back: '← หน้าแรก', contact: 'ติดต่อจองคิว →', details: 'รายละเอียด', addonName: 'รายการ', addonSupport: 'รองรับ', addonPrice: 'ราคาเริ่มต้น (THB)', addonDetails: 'รายละเอียดเพิ่มเติม', galleryOriginal: 'เปิดแกลเลอรีต้นฉบับ →' },
+  en: { home: 'Home', commission: 'Commission', queue: 'Queue', gallery: 'My Little Gallery', tos: 'Terms', back: '← Home', contact: 'Book a commission →', details: 'Details', addonName: 'Add-on', addonSupport: 'Supports', addonPrice: 'Starting price (THB)', addonDetails: 'More details', galleryOriginal: 'Open original gallery →' }
 };
 
 function translationInput(group, index, field, label, thValue, enValue, multiline = false) {
@@ -212,14 +212,14 @@ function renderTranslationsAdmin() {
     data.interfaceText.th = { ...translationInterfaceDefaults.th, ...(data.interfaceText.th || {}) };
     data.interfaceText.en = { ...translationInterfaceDefaults.en, ...(data.interfaceText.en || {}) };
     $('content-json').value = JSON.stringify(data, null, 2);
-    const labels = { home: 'เมนูหน้าแรก', commission: 'เมนู Commission', queue: 'เมนู Queue', gallery: 'เมนู Gallery', tos: 'เมนู TOS', back: 'ปุ่มกลับหน้าแรก', contact: 'ปุ่มติดต่อ', details: 'ปุ่มรายละเอียด', addonName: 'หัวตาราง Add-on', addonPrice: 'หัวตารางราคา', galleryOriginal: 'ลิงก์แกลเลอรีต้นฉบับ' };
+    const labels = { home: 'เมนูหน้าแรก', commission: 'เมนู Commission', queue: 'เมนู Queue', gallery: 'เมนู Gallery', tos: 'เมนู TOS', back: 'ปุ่มกลับหน้าแรก', contact: 'ปุ่มติดต่อ', details: 'ปุ่มรายละเอียด', addonName: 'หัวตาราง Add-on', addonSupport: 'หัวตารางรองรับ', addonPrice: 'หัวตารางราคา', addonDetails: 'หัวข้อรายละเอียด Add-on', galleryOriginal: 'ลิงก์แกลเลอรีต้นฉบับ' };
     const interfaceCards = Object.keys(labels).map((field) => `<div class="translation-card">${translationInput('interface', 0, field, labels[field], data.interfaceText.th[field], data.interfaceText.en[field])}</div>`).join('');
     const queue = data.queue || {};
     const queueCards = `<div class="translation-card"><span class="translation-card-title">QUEUE</span>${translationInput('queue', 0, 'title', 'ชื่อหน้า', queue.title, queue.titleEn)}${translationInput('queue', 0, 'details', 'รายละเอียด', queue.details, queue.detailsEn, true)}${translationInput('queue', 0, 'status', 'สถานะ', queue.status, queue.statusEn)}</div>`;
     const character = data.characterSheet || {};
     const characterCards = `<div class="translation-card"><span class="translation-card-title">OC CHARACTER SHEET</span>${translationInput('characterSheet', 0, 'title', 'ชื่อหัวข้อ', character.title, character.titleEn)}</div>`;
     const commissionCards = data.commission.map((item, index) => `<div class="translation-card"><span class="translation-card-title">COMMISSION ${index + 1} · ${escapeAdmin(item.title || '')}</span>${translationInput('commission', index, 'category', 'หมวดหมู่', item.category, item.categoryEn)}${translationInput('commission', index, 'title', 'ชื่อรายการ', item.title, item.titleEn)}${translationInput('commission', index, 'details', 'รายละเอียด', item.details, item.detailsEn, true)}</div>`).join('');
-    const addonCards = data.addons.map((item, index) => `<div class="translation-card"><span class="translation-card-title">ADD-ON ${index + 1} · ${escapeAdmin(item?.[0] || '')}</span>${translationInput('addons', index, 'name', 'ชื่อ Add-on', item?.[0], item?.[2])}${translationInput('addons', index, 'price', 'ราคา', item?.[1], item?.[3])}</div>`).join('');
+    const addonCards = data.addons.map((item, index) => `<div class="translation-card"><span class="translation-card-title">ADD-ON ${index + 1} · ${escapeAdmin(item?.[0] || '')}</span>${translationInput('addons', index, 'name', 'ชื่อ Add-on', item?.[0], item?.[2])}${translationInput('addons', index, 'price', 'ราคา', item?.[1], item?.[3])}${translationInput('addons', index, 'support', 'รองรับ', item?.[4], item?.[5])}${translationInput('addons', index, 'details', 'รายละเอียด', item?.[6], item?.[7], true)}</div>`).join('');
     const galleryCards = data.gallery.map((item, index) => `<div class="translation-card"><span class="translation-card-title">GALLERY ${index + 1} · ${escapeAdmin(item.title || '')}</span>${translationInput('gallery', index, 'title', 'ชื่อผลงาน', item.title, item.titleEn)}${translationInput('gallery', index, 'tag', 'ป้ายกำกับ', item.tag, item.tagEn)}${translationInput('gallery', index, 'description', 'รายละเอียด', item.description, item.descriptionEn, true)}</div>`).join('');
     const termCards = data.terms.map((item, index) => `<div class="translation-card"><span class="translation-card-title">TOS ${index + 1} · ${escapeAdmin(item.title || '')}</span>${translationInput('terms', index, 'title', 'ชื่อหัวข้อ', item.title, item.titleEn)}${translationInput('terms', index, 'body', 'รายละเอียด', item.body, item.bodyEn, true)}</div>`).join('');
     root.innerHTML = [translationGroup('ข้อความปุ่มและเมนู', interfaceCards, true), translationGroup('หน้าแรก', characterCards), translationGroup('Queue', queueCards), translationGroup('Commission', commissionCards), translationGroup('Add-ons', addonCards), translationGroup('My Little Gallery', galleryCards), translationGroup('TOS', termCards)].join('');
@@ -242,7 +242,9 @@ function updateTranslation(event) {
     } else if (group === 'addons') {
       const item = data.addons[index];
       if (!item) throw new Error('ไม่พบ Add-on ที่เลือก');
-      const slot = field === 'name' ? (lang === 'en' ? 2 : 0) : (lang === 'en' ? 3 : 1);
+      const slots = { name: [0, 2], price: [1, 3], support: [4, 5], details: [6, 7] };
+      const slot = slots[field]?.[lang === 'en' ? 1 : 0];
+      if (slot === undefined) throw new Error('ไม่พบช่องคำแปล Add-on');
       item[slot] = value;
     } else {
       const target = group === 'queue' || group === 'characterSheet' ? data[group] : data[group]?.[index];
@@ -773,6 +775,8 @@ function resetAddonForm() {
   editingAddonIndex = -1;
   $('addon-name').value = '';
   $('addon-price').value = '';
+  $('addon-support').value = '';
+  $('addon-details').value = '';
   $('addon-apply').textContent = 'เพิ่ม Add-on ＋';
   $('addon-cancel').hidden = true;
 }
@@ -784,6 +788,8 @@ function editAddon(index) {
     editingAddonIndex = index;
     $('addon-name').value = item[0] || '';
     $('addon-price').value = item[1] || '';
+    $('addon-support').value = item[4] || '';
+    $('addon-details').value = item[6] || '';
     $('addon-apply').textContent = 'บันทึก Add-on ✓';
     $('addon-cancel').hidden = false;
     $('addon-name').focus();
@@ -794,10 +800,12 @@ function applyAddon() {
   try {
     const name = $('addon-name').value.trim();
     const price = $('addon-price').value.trim();
+    const support = $('addon-support').value.trim();
+    const details = $('addon-details').value.trim();
     if (!name || !price) throw new Error('กรุณาใส่ชื่อและราคา Add-on');
     const data = readDraft();
-    if (editingAddonIndex >= 0) data.addons[editingAddonIndex] = [name, price, data.addons[editingAddonIndex]?.[2] || '', data.addons[editingAddonIndex]?.[3] || ''];
-    else data.addons.push([name, price]);
+    if (editingAddonIndex >= 0) data.addons[editingAddonIndex] = [name, price, data.addons[editingAddonIndex]?.[2] || '', data.addons[editingAddonIndex]?.[3] || '', support, data.addons[editingAddonIndex]?.[5] || '', details, data.addons[editingAddonIndex]?.[7] || ''];
+    else data.addons.push([name, price, '', '', support, '', details, '']);
     $('content-json').value = JSON.stringify(data, null, 2);
     const message = editingAddonIndex >= 0 ? 'แก้ไข Add-on แล้ว' : 'เพิ่ม Add-on แล้ว';
     resetAddonForm();

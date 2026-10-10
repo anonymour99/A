@@ -7,11 +7,11 @@
     <title>Anonymour · content studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261010k" />
-    <link rel="stylesheet" href="./admin.css?v=20261010l" />
+    <link rel="stylesheet" href="./styles.css?v=20261011a" />
+    <link rel="stylesheet" href="./admin.css?v=20261011a" />
     <script src="./firebase-config.js?v=20261010k"></script>
     <script src="./admin-config.js?v=20261010k"></script>
-    <script type="module" src="./admin.js?v=20261010l"></script>
+    <script type="module" src="./admin.js?v=20261011a"></script>
   </head>
   <body class="admin-page">
     <main class="admin-shell">
@@ -108,6 +108,8 @@
             <div class="media-form">
               <label>ชื่อ Add-on<input id="addon-name" type="text" placeholder="เช่น Face expression" /></label>
               <label>ราคา<input id="addon-price" type="text" placeholder="เช่น เริ่มต้น 500 ฿" /></label>
+              <label class="wide-field">รองรับ<input id="addon-support" type="text" placeholder="เช่น iOS / Android / RTX หรือสอบถาม" /></label>
+              <label class="wide-field">รายละเอียดเมื่อกดเปิด<textarea id="addon-details" placeholder="อธิบายขอบเขต เงื่อนไข หรือสิ่งที่จะได้รับ"></textarea></label>
             </div>
             <div class="admin-button-row"><button id="addon-apply" class="button button-dark" type="button">เพิ่ม Add-on ＋</button><button id="addon-cancel" class="mini-button" type="button" hidden>ยกเลิกแก้ไข</button></div>
             <p id="addon-message" class="admin-message" aria-live="polite"></p>

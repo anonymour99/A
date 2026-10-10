@@ -56,12 +56,14 @@ function localized(item, key) {
 }
 
 const defaultInterfaceText = {
-  th: { home: 'หน้าหลัก', commission: 'Commission', queue: 'คิวงาน', gallery: 'My Little Gallery', tos: 'ข้อตกลง', back: '← หน้าแรก', contact: 'ติดต่อจองคิว ↗', details: 'สอบถามรายละเอียด ↗', addonName: 'รายการ', addonPrice: 'ราคาเริ่มต้น (THB)', galleryOriginal: 'เปิดแกลเลอรีต้นฉบับ ↗', language: 'EN' },
-  en: { home: 'Home', commission: 'Commission', queue: 'Queue', gallery: 'My Little Gallery', tos: 'Terms', back: '← Home', contact: 'Book a commission ↗', details: 'Ask for details ↗', addonName: 'Add-on', addonPrice: 'Starting price (THB)', galleryOriginal: 'Open original gallery ↗', language: 'TH' }
+  th: { home: 'หน้าหลัก', commission: 'Commission', queue: 'คิวงาน', gallery: 'My Little Gallery', tos: 'ข้อตกลง', back: '← หน้าแรก', contact: 'ติดต่อจองคิว →', details: 'รายละเอียด', addonName: 'รายการ', addonSupport: 'รองรับ', addonPrice: 'ราคาเริ่มต้น (THB)', addonDetails: 'รายละเอียดเพิ่มเติม', galleryOriginal: 'เปิดแกลเลอรีต้นฉบับ →', language: 'EN' },
+  en: { home: 'Home', commission: 'Commission', queue: 'Queue', gallery: 'My Little Gallery', tos: 'Terms', back: '← Home', contact: 'Book a commission →', details: 'Details', addonName: 'Add-on', addonSupport: 'Supports', addonPrice: 'Starting price (THB)', addonDetails: 'More details', galleryOriginal: 'Open original gallery →', language: 'TH' }
 };
 
 function currentInterfaceText() {
-  return { ...defaultInterfaceText[siteLanguage], ...(content.interfaceText?.[siteLanguage] || {}) };
+  const merged = { ...defaultInterfaceText[siteLanguage], ...(content.interfaceText?.[siteLanguage] || {}) };
+  Object.keys(merged).forEach((key) => { if (typeof merged[key] === 'string') merged[key] = merged[key].replaceAll('↗', '→'); });
+  return merged;
 }
 
 function applyInterfaceLanguage() {
@@ -94,13 +96,19 @@ function setupLanguageSwitcher() {
   applyInterfaceLanguage();
 }
 
-function renderCommission() {
+function renderCommission(filter = 'all') {
   const list = byId('commission-list');
   if (!list) return;
-  list.innerHTML = content.commission.map((item, index) => {
+  const categories = [...new Set(content.commission.map((item) => item.category || 'Commission'))];
+  const filters = byId('commission-filters');
+  if (filters) filters.innerHTML = `<button class="commission-filter ${filter === 'all' ? 'active' : ''}" data-commission-filter="all">${siteLanguage === 'en' ? 'All' : 'ทั้งหมด'} <span>${String(content.commission.length).padStart(2, '0')}</span></button>${categories.map((category, index) => `<button class="commission-filter ${filter === String(index) ? 'active' : ''}" data-commission-filter="${index}">${escapeText(siteLanguage === 'en' ? content.commission.find((item) => (item.category || 'Commission') === category)?.categoryEn || category : category)}</button>`).join('')}`;
+  const rows = filter === 'all' ? content.commission : content.commission.filter((item) => (item.category || 'Commission') === categories[Number(filter)]);
+  list.innerHTML = rows.map((item) => {
+    const index = content.commission.indexOf(item);
     const image = item.image ? `<img class="commission-image" src="${safeHref(item.image)}" alt="${escapeText(localized(item, 'title'))}" loading="lazy" />` : '';
-    return `<article class="commission-card reveal ${image ? 'has-preview' : ''}" data-symbol="${escapeText(item.symbol || '✦')}"><span class="small-index">${String(index + 1).padStart(2, '0')} / ${escapeText(localized(item, 'category'))}</span>${image}<h3>${escapeText(localized(item, 'title'))}</h3><p>${escapeText(localized(item, 'details'))}</p>${commissionVideoHtml(item)}<div class="commission-bottom"><div class="price">${escapeText(item.price)} <small>THB</small></div><a href="https://vgen.co/anonymour_" target="_blank" rel="noreferrer">สอบถามรายละเอียด ↗</a></div></article>`;
+    return `<article class="commission-card reveal ${image ? 'has-preview' : ''}" data-symbol="${escapeText(item.symbol || '✦')}"><span class="small-index">${String(index + 1).padStart(2, '0')} / ${escapeText(localized(item, 'category'))}</span><div class="commission-card-layout"><div class="commission-card-media">${image}${commissionVideoHtml(item)}</div><div class="commission-card-copy"><h3>${escapeText(localized(item, 'title'))}</h3><p>${escapeText(localized(item, 'details'))}</p><div class="commission-bottom"><div class="price">${escapeText(item.price)} <small>THB</small></div></div></div></div></article>`;
   }).join('');
+  observeReveals();
 }
 
 function renderGallery(filter = 'all') {
@@ -115,7 +123,7 @@ function renderGallery(filter = 'all') {
       : media.type === 'video'
         ? `<video class="work-image" src="${safeHref(media.src)}" muted playsinline preload="metadata"></video>`
         : '';
-    return `<article class="work-card reveal" tabindex="0" role="button" aria-label="${siteLanguage === 'en' ? 'Open details' : 'เปิดรายละเอียด'} ${escapeText(localized(item, 'title'))}" data-work="${content.gallery.indexOf(item)}"><div class="work-art ${preview ? 'has-media' : ''}" style="--art-mid:${safeColor(item.mid, '#82619b')};--art-deep:${safeColor(item.deep, '#282035')}" data-icon="${escapeText(item.icon || '▶')}">${preview}${media.type !== 'none' ? '<span class="video-badge">▶ VIDEO</span>' : ''}<span class="art-small top">ANONYMOUR · ${String(index + 1).padStart(2, '0')}</span></div><div class="work-copy"><h3>${escapeText(localized(item, 'title'))}</h3><span>${escapeText(localized(item, 'tag'))}</span></div></article>`;
+    return `<article class="work-card reveal" tabindex="0" role="button" aria-label="${siteLanguage === 'en' ? 'Open details' : 'เปิดรายละเอียด'} ${escapeText(localized(item, 'title'))}" data-work="${content.gallery.indexOf(item)}"><div class="work-art ${preview ? 'has-media' : ''}" style="--art-mid:${safeColor(item.mid, '#82619b')};--art-deep:${safeColor(item.deep, '#282035')}" data-icon="${escapeText(item.icon || '▶')}">${preview}${media.type !== 'none' ? '<span class="video-badge">VIDEO</span>' : ''}<span class="art-small top">ANONYMOUR · ${String(index + 1).padStart(2, '0')}</span></div></article>`;
   }).join('');
   observeReveals();
 }
@@ -125,12 +133,15 @@ function renderAddons() {
   const rows = content.addons.map((item) => {
     const label = siteLanguage === 'en' ? item?.[2] || item?.[0] : item?.[0];
     const price = siteLanguage === 'en' ? item?.[3] || item?.[1] : item?.[1];
-    return [label || '', price || ''];
+    const support = siteLanguage === 'en' ? item?.[5] || item?.[4] : item?.[4];
+    const details = siteLanguage === 'en' ? item?.[7] || item?.[6] : item?.[6];
+    return [label || '', support || (siteLanguage === 'en' ? 'Ask first' : 'สอบถาม'), price || '', details || (siteLanguage === 'en' ? 'Please ask for compatibility and scope before booking.' : 'กรุณาสอบถามรายละเอียดและขอบเขตงานก่อนจองคิว')];
   });
+  const table = (prefix) => `<div class="addon-table-head"><span>${escapeText(text.addonName)}</span><span>${escapeText(text.addonSupport)}</span><span>${escapeText(text.addonPrice)}</span><i aria-hidden="true"></i></div>${rows.map(([label, support, price, details], index) => `<article class="addon-item"><button class="addon-trigger" type="button" aria-expanded="false" aria-controls="${prefix}-addon-detail-${index}"><span>${escapeText(label)}</span><em>${escapeText(support)}</em><b>${escapeText(price)}</b><i aria-hidden="true">＋</i></button><div class="addon-panel" id="${prefix}-addon-detail-${index}"><div><strong>${escapeText(text.addonDetails)}</strong><p>${escapeText(details)}</p></div></div></article>`).join('')}`;
   const list = byId('addons-list');
-  if (list) list.innerHTML = `<div class="price-table-head"><span>${escapeText(text.addonName)}</span><span>${escapeText(text.addonPrice)}</span></div>${rows.map(([label, price]) => `<div class="price-row"><span>${escapeText(label)}</span><b>${escapeText(price)}</b></div>`).join('')}`;
+  if (list) list.innerHTML = table('modal');
   const preview = byId('addons-preview');
-  if (preview) preview.innerHTML = rows.map(([label, price]) => `<div class="addon-preview-row"><span>${escapeText(label)}</span><b>${escapeText(price)}</b></div>`).join('');
+  if (preview) preview.innerHTML = table('preview');
 }
 
 function renderTerms() {
@@ -140,14 +151,14 @@ function renderTerms() {
 
 function renderSocials() {
   const links = byId('social-links');
-  if (links) links.innerHTML = content.socials.map(([label, href]) => `<a href="${safeHref(href)}" target="_blank" rel="noreferrer">${escapeText(label)} ↗</a>`).join('');
+  if (links) links.innerHTML = content.socials.map(([label, href]) => `<a href="${safeHref(href)}" target="_blank" rel="noreferrer">${escapeText(label)} →</a>`).join('');
   const homeLinks = document.querySelectorAll('.home-socials, .home-contact-card .contact-list');
   if (homeLinks.length) {
     const icons = { Discord: '◉', Twitch: '♜', X: '𝕏', TikTok: '♪', VGen: '♡' };
     homeLinks.forEach((homeLink) => {
       const contactList = homeLink.classList.contains('contact-list');
       homeLink.innerHTML = content.socials.map(([label, href]) => contactList
-        ? `<a href="${safeHref(href)}" target="_blank" rel="noreferrer"><span class="contact-link-icon">${icons[label] || '✦'}</span><span>${escapeText(label)}</span><b>↗</b></a>`
+        ? `<a href="${safeHref(href)}" target="_blank" rel="noreferrer"><span class="contact-link-icon">${icons[label] || '✦'}</span><span>${escapeText(label)}</span><b class="text-arrow">→</b></a>`
         : `<a href="${safeHref(href)}" target="_blank" rel="noreferrer" aria-label="${escapeText(label)}" title="${escapeText(label)}">${icons[label] || '✦'}</a>`).join('');
     });
   }
@@ -205,6 +216,7 @@ function updateMusicTrack(autoplay = false) {
   const toggle = byId('music-toggle');
   const progress = byId('music-progress');
   const mute = byId('music-mute');
+  const volume = byId('music-volume');
   const previous = byId('music-previous');
   const next = byId('music-next');
   byId('music-title').textContent = music.title || 'ยังไม่ได้เพิ่มเพลง';
@@ -213,13 +225,13 @@ function updateMusicTrack(autoplay = false) {
     const changed = audio.src !== url;
     audio.src = url;
     player.dataset.playerState = 'ready';
-    [toggle, progress, mute, previous, next].forEach((control) => { if (control) control.disabled = false; });
+    [toggle, progress, mute, volume, previous, next].forEach((control) => { if (control) control.disabled = false; });
     if (changed) { progress.value = '0'; byId('music-time').textContent = '0:00 / 0:00'; }
     if (autoplay) audio.play().catch(() => {});
   } else {
     audio.removeAttribute('src');
     player.dataset.playerState = 'empty';
-    [toggle, progress, mute, previous, next].forEach((control) => { if (control) control.disabled = true; });
+    [toggle, progress, mute, volume, previous, next].forEach((control) => { if (control) control.disabled = true; });
   }
 }
 
@@ -308,6 +320,8 @@ function setupInteractions() {
     airyMenu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => { airyMenu.classList.remove('open'); airyToggle.setAttribute('aria-expanded', 'false'); }));
   }
   document.querySelectorAll('.filter').forEach((button) => button.addEventListener('click', () => { document.querySelectorAll('.filter').forEach((item) => item.classList.remove('active')); button.classList.add('active'); renderGallery(button.dataset.filter); }));
+  const commissionFilters = byId('commission-filters');
+  if (commissionFilters) commissionFilters.addEventListener('click', (event) => { const button = event.target.closest('.commission-filter'); if (button) renderCommission(button.dataset.commissionFilter || 'all'); });
   const addonDialog = byId('addons-dialog');
   const addonOpen = byId('addons-open');
   if (addonOpen && addonDialog) addonOpen.addEventListener('click', () => addonDialog.showModal());
@@ -319,6 +333,7 @@ function setupInteractions() {
   if (characterDialog) characterDialog.addEventListener('click', (event) => { if (event.target === characterDialog) characterDialog.close(); });
   const tosList = byId('tos-list');
   if (tosList) tosList.addEventListener('click', (event) => { const button = event.target.closest('.tos-trigger'); if (!button) return; const item = button.closest('.tos-item'); item.classList.toggle('open'); button.setAttribute('aria-expanded', item.classList.contains('open')); });
+  [byId('addons-preview'), byId('addons-list')].filter(Boolean).forEach((root) => root.addEventListener('click', (event) => { const button = event.target.closest('.addon-trigger'); if (!button) return; const item = button.closest('.addon-item'); item.classList.toggle('open'); button.setAttribute('aria-expanded', item.classList.contains('open')); }));
   const showWork = (card) => {
     const item = content.gallery[Number(card.dataset.work)];
     if (!item) return;
@@ -378,30 +393,33 @@ function setupInteractions() {
   const musicToggle = byId('music-toggle');
   const musicProgress = byId('music-progress');
   const musicMute = byId('music-mute');
+  const musicVolume = byId('music-volume');
   const musicPrevious = byId('music-previous');
   const musicNext = byId('music-next');
   const musicTime = byId('music-time');
   const formatTime = (seconds) => Number.isFinite(seconds) ? `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}` : '0:00';
-  if (audio && musicToggle && musicProgress && musicMute && musicTime) {
+  if (audio && musicToggle && musicProgress && musicMute && musicVolume && musicTime) {
+    audio.volume = Number(musicVolume.value);
     musicToggle.addEventListener('click', async () => {
       if (!audio.src) return;
       if (audio.paused) { try { await audio.play(); } catch { return; } }
       else audio.pause();
     });
-    audio.addEventListener('play', () => { musicToggle.textContent = 'Ⅱ'; musicToggle.setAttribute('aria-label', 'หยุดเพลงชั่วคราว'); });
-    audio.addEventListener('pause', () => { musicToggle.textContent = '▶'; musicToggle.setAttribute('aria-label', 'เล่นเพลง'); });
+    audio.addEventListener('play', () => { musicToggle.classList.add('is-playing'); musicToggle.setAttribute('aria-label', 'หยุดเพลงชั่วคราว'); });
+    audio.addEventListener('pause', () => { musicToggle.classList.remove('is-playing'); musicToggle.setAttribute('aria-label', 'เล่นเพลง'); });
     audio.addEventListener('timeupdate', () => {
       const duration = audio.duration || 0;
       musicProgress.value = duration ? String((audio.currentTime / duration) * 100) : '0';
       musicTime.textContent = `${formatTime(audio.currentTime)} / ${formatTime(duration)}`;
     });
     musicProgress.addEventListener('input', () => { if (audio.duration) audio.currentTime = (Number(musicProgress.value) / 100) * audio.duration; });
-    musicMute.addEventListener('click', () => { audio.muted = !audio.muted; musicMute.textContent = audio.muted ? '×' : '♪'; musicMute.setAttribute('aria-label', audio.muted ? 'เปิดเสียง' : 'ปิดเสียง'); });
+    musicMute.addEventListener('click', () => { audio.muted = !audio.muted; musicMute.classList.toggle('is-muted', audio.muted); musicMute.textContent = audio.muted ? 'MUTE' : 'VOL'; musicMute.setAttribute('aria-label', audio.muted ? 'เปิดเสียง' : 'ปิดเสียง'); });
+    musicVolume.addEventListener('input', () => { audio.volume = Number(musicVolume.value); audio.muted = audio.volume === 0; musicMute.classList.toggle('is-muted', audio.muted); musicMute.textContent = audio.muted ? 'MUTE' : 'VOL'; });
     if (musicPrevious) musicPrevious.addEventListener('click', () => { musicPlaylistIndex -= 1; updateMusicTrack(true); });
     if (musicNext) musicNext.addEventListener('click', () => { musicPlaylistIndex += 1; updateMusicTrack(true); });
     audio.addEventListener('ended', () => {
       if (getMusicPlaylist().length > 1) { musicPlaylistIndex += 1; updateMusicTrack(true); }
-      else musicToggle.textContent = '▶';
+      else musicToggle.classList.remove('is-playing');
     });
   }
   let lastSparkle = 0;

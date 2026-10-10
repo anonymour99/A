@@ -9,9 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261010j" />
+    <link rel="stylesheet" href="./styles.css?v=20261011a" />
     <script src="./firebase-config.js?v=20261010i"></script>
-    <script type="module" src="./app.js?v=20261010l"></script>
+    <script type="module" src="./app.js?v=20261011a"></script>
   </head>
   <body class="home-page airy-home">
     <div class="sparkle-layer" aria-hidden="true"></div>
@@ -34,12 +34,12 @@
           </section>
           <span class="airy-status"><i></i><span data-content="status">STATUS : OPEN</span></span>
           <div class="airy-core-links">
-            <a class="core-commission" href="./commission.html"><small>START HERE</small><strong>commission</strong><span>↗</span></a>
-            <a href="./tos.html"><small>READ FIRST</small><strong>tos</strong><span>↗</span></a>
-            <a href="./queue.html"><small>NOTION</small><strong>queue</strong><span>↗</span></a>
-            <a href="./gallery.html"><small>WORKS</small><strong>gallery</strong><span>↗</span></a>
+            <a class="core-commission" href="./commission.html"><small>START HERE</small><strong>commission</strong><span class="text-arrow">→</span></a>
+            <a href="./tos.html"><small>READ FIRST</small><strong>tos</strong><span class="text-arrow">→</span></a>
+            <a href="./queue.html"><small>NOTION</small><strong>queue</strong><span class="text-arrow">→</span></a>
+            <a href="./gallery.html"><small>WORKS</small><strong>gallery</strong><span class="text-arrow">→</span></a>
           </div>
-          <div class="airy-inline-actions"><a class="airy-text-link" href="./gallery.html">view my little gallery <span>↗</span></a><button class="airy-sheet-link" id="character-sheet-open" type="button">✦ OC character sheet</button></div>
+          <div class="airy-inline-actions"><a class="airy-text-link" href="./gallery.html">view my little gallery <span class="text-arrow">→</span></a><button class="airy-sheet-link" id="character-sheet-open" type="button">✦ OC character sheet</button></div>
         </div>
         <div class="airy-portrait">
           <p class="portrait-note">ANONYMOUR<br /><span>live2d · animation · chibi</span></p>
@@ -51,12 +51,12 @@
         <section class="home-contact-card" aria-labelledby="contact-heading">
           <h2 class="home-card-title" id="contact-heading"><span aria-hidden="true">♡</span>ช่องทางติดต่อ</h2>
           <nav class="contact-list" id="home-socials" aria-label="ช่องทางติดต่อ"></nav>
-          <a class="contact-card-cta" data-contact="vgen" href="https://vgen.co/anonymour_" target="_blank" rel="noreferrer">สอบถามรายละเอียดงาน ↗</a>
+          <p class="contact-card-note">feel free to dm</p>
         </section>
-        <section class="custom-player" data-player-state="empty">
-          <audio id="music-audio" preload="metadata"></audio><h2 class="player-card-title">♫ เพลย์ลิสต์ของเรา</h2><div class="player-cover" aria-hidden="true">♫</div>
+        <section class="custom-player" data-player-state="empty" aria-label="เครื่องเล่นเพลง">
+          <audio id="music-audio" preload="metadata"></audio><div class="player-cover" aria-hidden="true"><span>✦</span></div>
           <div class="player-info"><small>NOW PLAYING</small><strong id="music-title">ยังไม่ได้เพิ่มเพลง</strong><span id="music-artist">เพิ่มไฟล์ MP3 จากหลังบ้าน</span></div>
-          <div class="player-controls"><button class="player-skip" id="music-previous" type="button" aria-label="เพลงก่อนหน้า" disabled>◀</button><button class="player-toggle" id="music-toggle" type="button" aria-label="เล่นเพลง" disabled>▶</button><button class="player-skip" id="music-next" type="button" aria-label="เพลงถัดไป" disabled>▶</button></div><div class="player-track"><input id="music-progress" type="range" min="0" max="100" value="0" aria-label="ตำแหน่งเพลง" disabled /><span id="music-time">0:00 / 0:00</span></div><button class="player-volume" id="music-mute" type="button" aria-label="ปิดเสียง" disabled>♪</button>
+          <div class="player-controls"><button class="player-skip is-previous" id="music-previous" type="button" aria-label="เพลงก่อนหน้า" disabled><span></span></button><button class="player-toggle" id="music-toggle" type="button" aria-label="เล่นเพลง" disabled><span class="play-shape"></span><span class="pause-shape"></span></button><button class="player-skip is-next" id="music-next" type="button" aria-label="เพลงถัดไป" disabled><span></span></button></div><div class="player-track"><input id="music-progress" type="range" min="0" max="100" value="0" aria-label="ตำแหน่งเพลง" disabled /><span id="music-time">0:00 / 0:00</span></div><div class="player-volume-control"><button class="player-volume" id="music-mute" type="button" aria-label="ปิดเสียง" disabled>VOL</button><input id="music-volume" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="ระดับเสียง" disabled /></div>
         </section>
       </aside>
     </main>
