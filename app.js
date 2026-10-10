@@ -348,9 +348,22 @@ function setupInteractions() {
     const detail = byId('work-detail');
     const dialog = byId('work-dialog');
     if (!detail || !dialog) return;
-    detail.innerHTML = `<div class="work-detail-art" style="--art-mid:${safeColor(item.mid, '#82619b')};--art-deep:${safeColor(item.deep, '#282035')}">${preview}</div><div class="work-detail-copy"><span class="small-index">${escapeText(localized(item, 'tag'))}</span><h2>${escapeText(localized(item, 'title'))}</h2><p>${escapeText(localized(item, 'description'))}</p><a class="text-link" href="${safeHref(sourceUrl + '#gallery')}" target="_blank" rel="noreferrer">${escapeText(currentInterfaceText().galleryOriginal)}</a></div>`;
+    const fullscreenButton = media.type !== 'none' ? `<button class="work-fullscreen" type="button" aria-label="${siteLanguage === 'en' ? 'View video fullscreen' : 'ดูวิดีโอเต็มจอ'}">${siteLanguage === 'en' ? 'Fullscreen' : 'เต็มจอ'}</button>` : '';
+    detail.innerHTML = `<div class="work-detail-art" style="--art-mid:${safeColor(item.mid, '#82619b')};--art-deep:${safeColor(item.deep, '#282035')}">${preview}${fullscreenButton}</div><div class="work-detail-copy"><span class="small-index">${escapeText(localized(item, 'tag'))}</span><h2>${escapeText(localized(item, 'title'))}</h2><p>${escapeText(localized(item, 'description'))}</p><a class="text-link" href="${safeHref(sourceUrl + '#gallery')}" target="_blank" rel="noreferrer">${escapeText(currentInterfaceText().galleryOriginal)}</a></div>`;
     dialog.showModal();
     document.body.classList.add('gallery-modal-open');
+    const fullscreen = detail.querySelector('.work-fullscreen');
+    if (fullscreen) fullscreen.addEventListener('click', async () => {
+      const mediaNode = detail.querySelector('.work-video');
+      const stage = detail.querySelector('.work-detail-art');
+      try {
+        if (mediaNode?.tagName === 'VIDEO' && typeof mediaNode.webkitEnterFullscreen === 'function') { mediaNode.webkitEnterFullscreen(); return; }
+        const target = mediaNode?.tagName === 'VIDEO' ? mediaNode : stage;
+        const request = target?.requestFullscreen || target?.webkitRequestFullscreen;
+        if (request) { await request.call(target); return; }
+        window.open(media.src, '_blank', 'noopener,noreferrer');
+      } catch { window.open(media.src, '_blank', 'noopener,noreferrer'); }
+    });
   };
   const gallery = byId('gallery-grid');
   if (gallery) {
