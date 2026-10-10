@@ -131,9 +131,15 @@ function renderGallery(filter = 'all') {
 function renderAddons() {
   const text = currentInterfaceText();
   const rows = content.addons.map((item) => {
-    const label = siteLanguage === 'en' ? item?.[2] || item?.[0] : item?.[0];
-    const price = siteLanguage === 'en' ? item?.[3] || item?.[1] : item?.[1];
-    const support = siteLanguage === 'en' ? item?.[5] || item?.[4] : item?.[4];
+    const label = siteLanguage === 'en'
+      ? addonField(item, 2, 'nameEn') || addonField(item, 0, 'name')
+      : addonField(item, 0, 'name');
+    const price = siteLanguage === 'en'
+      ? addonField(item, 3, 'priceEn') || addonField(item, 1, 'price')
+      : addonField(item, 1, 'price');
+    const support = siteLanguage === 'en'
+      ? addonField(item, 5, 'supportEn') || addonField(item, 4, 'support')
+      : addonField(item, 4, 'support');
     return [label || '', support || (siteLanguage === 'en' ? 'Ask first' : 'สอบถาม'), price || ''];
   });
   const table = `<div class="addon-table-head"><span>${escapeText(text.addonName)}</span><span>${escapeText(text.addonSupport)}</span><span>${escapeText(text.addonPrice)}</span></div>${rows.map(([label, support, price]) => `<div class="addon-table-row"><span>${escapeText(label)}</span><em>${escapeText(support)}</em><b>${escapeText(price)}</b></div>`).join('')}`;
@@ -143,6 +149,11 @@ function renderAddons() {
   if (preview) preview.innerHTML = table;
 }
 
+function addonField(item, arrayIndex, objectKey) {
+  if (Array.isArray(item)) return item[arrayIndex] || '';
+  return item && typeof item === 'object' ? item[objectKey] || '' : '';
+}
+
 function renderTerms() {
   const list = byId('tos-list');
   if (list) list.innerHTML = content.terms.map((item, index) => `<article class="tos-item open"><button class="tos-trigger" aria-expanded="true" aria-controls="term-${index}"><span class="tos-number">${escapeText(item.icon || String(index + 1).padStart(2, '0'))}</span><span class="tos-title">${escapeText(localized(item, 'title'))}</span><span class="tos-icon">＋</span></button><div class="tos-body" id="term-${index}"><div class="tos-body-inner"><p>${escapeText(localized(item, 'body'))}</p></div></div></article>`).join('');
@@ -150,18 +161,30 @@ function renderTerms() {
 
 function renderSocials() {
   const links = byId('social-links');
-  if (links) links.innerHTML = content.socials.map(([label, href]) => `<a href="${safeHref(href)}" target="_blank" rel="noreferrer">${escapeText(label)} →</a>`).join('');
+  if (links) links.innerHTML = content.socials.map((item) => `<a href="${safeHref(socialField(item, 1, 'url'))}" target="_blank" rel="noreferrer">${escapeText(socialField(item, 0, 'label'))} →</a>`).join('');
   const homeLinks = document.querySelectorAll('.home-socials, .home-contact-card .contact-list');
   if (homeLinks.length) {
     const icons = { Discord: '◉', Twitch: '♜', X: '𝕏', TikTok: '♪', VGen: '♡' };
     homeLinks.forEach((homeLink) => {
       const contactList = homeLink.classList.contains('contact-list');
-      homeLink.innerHTML = content.socials.map(([label, href]) => contactList
-        ? `<a href="${safeHref(href)}" target="_blank" rel="noreferrer"><span class="contact-link-icon">${icons[label] || '✦'}</span><span>${escapeText(label)}</span><b class="text-arrow">→</b></a>`
-        : `<a href="${safeHref(href)}" target="_blank" rel="noreferrer" aria-label="${escapeText(label)}" title="${escapeText(label)}">${icons[label] || '✦'}</a>`).join('');
+      homeLink.innerHTML = content.socials.map((item) => {
+        const label = socialField(item, 0, 'label');
+        const href = socialField(item, 1, 'url');
+        return contactList
+          ? `<a href="${safeHref(href)}" target="_blank" rel="noreferrer"><span class="contact-link-icon">${icons[label] || '✦'}</span><span>${escapeText(label)}</span><b class="text-arrow">→</b></a>`
+          : `<a href="${safeHref(href)}" target="_blank" rel="noreferrer" aria-label="${escapeText(label)}" title="${escapeText(label)}">${icons[label] || '✦'}</a>`;
+      }).join('');
     });
   }
-  document.querySelectorAll('[data-contact="vgen"]').forEach((link) => { link.href = safeHref((content.socials.find(([label]) => label.toLowerCase() === 'vgen') || ['','https://vgen.co/'])[1]); });
+  document.querySelectorAll('[data-contact="vgen"]').forEach((link) => {
+    const vgen = content.socials.find((item) => socialField(item, 0, 'label').toLowerCase() === 'vgen');
+    link.href = safeHref(vgen ? socialField(vgen, 1, 'url') : 'https://vgen.co/');
+  });
+}
+
+function socialField(item, arrayIndex, objectKey) {
+  if (Array.isArray(item)) return item[arrayIndex] || '';
+  return item && typeof item === 'object' ? item[objectKey] || '' : '';
 }
 
 function renderQueue() {

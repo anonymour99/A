@@ -106,6 +106,8 @@ async function loadDocument() {
         ? remote.commission
         : structuredClone(fallbackContent.commission)
     };
+    data.addons = (Array.isArray(data.addons) ? data.addons : []).map(addonArray);
+    data.socials = (Array.isArray(data.socials) ? data.socials : []).map(socialArray);
     $('content-json').value = JSON.stringify(data, null, 2);
     $('music-title-input').value = data.music?.title || '';
     $('music-artist-input').value = data.music?.artist || '';
@@ -163,7 +165,10 @@ async function save() {
     const { auth, db, doc, setDoc } = await connectFirebase();
     const user = auth.currentUser;
     if (!user || !user.emailVerified || user.email?.toLowerCase() !== adminEmail) throw new Error('บัญชีผู้ใช้ไม่มีสิทธิ์บันทึก');
-    await setDoc(doc(db, 'publicContent', 'site'), data);
+    const publishedData = structuredClone(data);
+    publishedData.addons = (publishedData.addons || []).map(addonObject);
+    publishedData.socials = (publishedData.socials || []).map(socialObject);
+    await setDoc(doc(db, 'publicContent', 'site'), publishedData);
     $('content-json').value = JSON.stringify(data, null, 2);
     $('queue-url-input').value = data.queue?.url || fallbackContent.queue.url;
     queueUrlDirty = false;
@@ -176,11 +181,54 @@ function readDraft() {
   if (!data || Array.isArray(data) || typeof data !== 'object') throw new Error('ข้อมูลหลักต้องเป็น JSON object');
   if (!Array.isArray(data.commission)) data.commission = [];
   if (!Array.isArray(data.addons)) data.addons = [];
+  data.addons = data.addons.map(addonArray);
   if (!Array.isArray(data.gallery)) data.gallery = [];
   if (!Array.isArray(data.terms)) data.terms = [];
   if (!Array.isArray(data.musicPlaylist)) data.musicPlaylist = data.music?.url ? [data.music] : [];
   if (!Array.isArray(data.socials)) data.socials = [];
+  data.socials = data.socials.map(socialArray);
   return data;
+}
+
+function addonArray(item) {
+  if (Array.isArray(item)) {
+    return [
+      item[0] || '', item[1] || '', item[2] || '', item[3] || '',
+      item[4] || '', item[5] || '', item[6] || '', item[7] || ''
+    ];
+  }
+  if (item && typeof item === 'object') {
+    return [
+      item.name || '', item.price || '', item.nameEn || '', item.priceEn || '',
+      item.support || '', item.supportEn || '', item.details || '', item.detailsEn || ''
+    ];
+  }
+  return ['', '', '', '', '', '', '', ''];
+}
+
+function addonObject(item) {
+  const row = addonArray(item);
+  return {
+    name: row[0],
+    price: row[1],
+    nameEn: row[2],
+    priceEn: row[3],
+    support: row[4],
+    supportEn: row[5],
+    details: row[6],
+    detailsEn: row[7]
+  };
+}
+
+function socialArray(item) {
+  if (Array.isArray(item)) return [item[0] || '', item[1] || ''];
+  if (item && typeof item === 'object') return [item.label || '', item.url || ''];
+  return ['', ''];
+}
+
+function socialObject(item) {
+  const row = socialArray(item);
+  return { label: row[0], url: row[1] };
 }
 
 const translationInterfaceDefaults = {
