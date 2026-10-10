@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=20261010k" />
-    <link rel="stylesheet" href="./admin.css?v=20261010k" />
+    <link rel="stylesheet" href="./admin.css?v=20261010l" />
     <script src="./firebase-config.js?v=20261010k"></script>
     <script src="./admin-config.js?v=20261010k"></script>
-    <script type="module" src="./admin.js?v=20261010k"></script>
+    <script type="module" src="./admin.js?v=20261010l"></script>
   </head>
   <body class="admin-page">
     <main class="admin-shell">
@@ -33,6 +33,7 @@
             <a href="#gallery" data-admin-nav="gallery"><span>▧</span>Gallery</a>
             <a href="#queue" data-admin-nav="queue"><span>☷</span>Queue</a>
             <a href="#contact" data-admin-nav="contact"><span>✉</span>ช่องทางติดต่อ</a>
+            <a href="#translations" data-admin-nav="translations"><span>文</span>คำแปล TH / EN</a>
             <a href="#settings" data-admin-nav="settings"><span>⚙</span>ข้อมูลทั้งหมด</a>
           </nav>
           <p class="admin-help admin-page-help">เลือกหน้าจากเมนูด้านบน แล้วกด “บันทึกและเผยแพร่” หลังแก้ไขเสร็จ</p>
@@ -155,6 +156,13 @@
             <div id="contact-items" class="gallery-admin-list"></div>
           </section>
 
+          <section class="media-editor translation-editor" data-admin-page="translations" aria-labelledby="translation-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">THAI / ENGLISH</span><h3 id="translation-editor-title">แก้คำแปลเว็บไซต์</h3></div></div>
+            <p class="admin-help">แก้ข้อความภาษาไทยและภาษาอังกฤษคู่กันได้จากหน้านี้ ช่องภาษาอังกฤษที่เว้นว่างจะแสดงข้อความภาษาไทยแทนโดยอัตโนมัติ</p>
+            <div id="translation-sections" class="translation-sections"></div>
+            <p id="translation-message" class="admin-message" aria-live="polite"></p>
+          </section>
+
           <section class="admin-settings-page" data-admin-page="settings">
           <p class="admin-help json-help">ข้อมูลส่วนอื่นสามารถแก้ไขใน JSON ด้านล่างได้</p>
           <label class="json-label" for="content-json">ข้อมูลเว็บไซต์ (JSON)</label>
@@ -178,3 +186,4 @@
     </main>
   </body>
 </html>
+

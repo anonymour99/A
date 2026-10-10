@@ -62,6 +62,7 @@ const adminPages = {
   gallery: 'จัดการ My Little Gallery',
   queue: 'จัดการหน้า Queue',
   contact: 'จัดการช่องทางติดต่อ',
+  translations: 'แก้คำแปล TH / EN',
   settings: 'ข้อมูลเว็บไซต์ทั้งหมด'
 };
 
@@ -74,6 +75,7 @@ function showAdminPage() {
     link.setAttribute('aria-current', active ? 'page' : 'false');
   });
   $('admin-current-page').textContent = adminPages[page];
+  if (page === 'translations') renderTranslationsAdmin();
 }
 
 async function loadDocument() {
@@ -90,6 +92,7 @@ async function loadDocument() {
   renderTosAdmin();
   renderMusicAdmin();
   renderContactsAdmin();
+  renderTranslationsAdmin();
   setMessage('save-message', 'เปิดตัวแก้ไขแล้ว · กำลังตรวจข้อมูล Firebase…');
   await new Promise((resolve) => requestAnimationFrame(resolve));
   try {
@@ -115,6 +118,7 @@ async function loadDocument() {
     renderTosAdmin();
     renderMusicAdmin();
     renderContactsAdmin();
+    renderTranslationsAdmin();
     setMessage('save-message', snapshot.exists() ? 'โหลดข้อมูลจาก Firebase แล้ว' : 'กำลังใช้ข้อมูลเริ่มต้น · บันทึกเพื่อสร้างเอกสาร');
   } catch (error) {
     $('content-json').value = JSON.stringify(fallbackContent, null, 2);
@@ -129,6 +133,7 @@ async function loadDocument() {
     renderTosAdmin();
     renderMusicAdmin();
     renderContactsAdmin();
+    renderTranslationsAdmin();
     setMessage('save-message', `เปิดข้อมูลเริ่มต้นให้แก้ไขได้ · Firebase ยังไม่พร้อมบันทึก (${error.message})`, true);
   }
 }
@@ -176,6 +181,77 @@ function readDraft() {
   if (!Array.isArray(data.musicPlaylist)) data.musicPlaylist = data.music?.url ? [data.music] : [];
   if (!Array.isArray(data.socials)) data.socials = [];
   return data;
+}
+
+const translationInterfaceDefaults = {
+  th: { home: 'หน้าหลัก', commission: 'Commission', queue: 'คิวงาน', gallery: 'My Little Gallery', tos: 'ข้อตกลง', back: '← หน้าแรก', contact: 'ติดต่อจองคิว ↗', details: 'สอบถามรายละเอียด ↗', addonName: 'รายการ', addonPrice: 'ราคาเริ่มต้น (THB)', galleryOriginal: 'เปิดแกลเลอรีต้นฉบับ ↗' },
+  en: { home: 'Home', commission: 'Commission', queue: 'Queue', gallery: 'My Little Gallery', tos: 'Terms', back: '← Home', contact: 'Book a commission ↗', details: 'Ask for details ↗', addonName: 'Add-on', addonPrice: 'Starting price (THB)', galleryOriginal: 'Open original gallery ↗' }
+};
+
+function translationInput(group, index, field, label, thValue, enValue, multiline = false) {
+  const attrs = `data-translation-group="${group}" data-translation-index="${index}" data-translation-field="${field}"`;
+  const thai = multiline
+    ? `<textarea ${attrs} data-translation-lang="th">${escapeAdmin(thValue)}</textarea>`
+    : `<input type="text" ${attrs} data-translation-lang="th" value="${escapeAdmin(thValue)}">`;
+  const english = multiline
+    ? `<textarea ${attrs} data-translation-lang="en" placeholder="ว่างไว้เพื่อใช้ภาษาไทย">${escapeAdmin(enValue)}</textarea>`
+    : `<input type="text" ${attrs} data-translation-lang="en" placeholder="ว่างไว้เพื่อใช้ภาษาไทย" value="${escapeAdmin(enValue)}">`;
+  return `<div class="translation-pair"><label class="translation-field"><b>TH · ${escapeAdmin(label)}</b>${thai}</label><label class="translation-field"><b>EN · ${escapeAdmin(label)}</b>${english}</label></div>`;
+}
+
+function translationGroup(title, cards, open = false) {
+  return `<details class="translation-group"${open ? ' open' : ''}><summary>${escapeAdmin(title)}</summary><div class="translation-group-body">${cards || '<p class="translation-empty">ยังไม่มีรายการในส่วนนี้</p>'}</div></details>`;
+}
+
+function renderTranslationsAdmin() {
+  const root = $('translation-sections');
+  if (!root) return;
+  try {
+    const data = readDraft();
+    data.interfaceText = data.interfaceText || structuredClone(translationInterfaceDefaults);
+    data.interfaceText.th = { ...translationInterfaceDefaults.th, ...(data.interfaceText.th || {}) };
+    data.interfaceText.en = { ...translationInterfaceDefaults.en, ...(data.interfaceText.en || {}) };
+    $('content-json').value = JSON.stringify(data, null, 2);
+    const labels = { home: 'เมนูหน้าแรก', commission: 'เมนู Commission', queue: 'เมนู Queue', gallery: 'เมนู Gallery', tos: 'เมนู TOS', back: 'ปุ่มกลับหน้าแรก', contact: 'ปุ่มติดต่อ', details: 'ปุ่มรายละเอียด', addonName: 'หัวตาราง Add-on', addonPrice: 'หัวตารางราคา', galleryOriginal: 'ลิงก์แกลเลอรีต้นฉบับ' };
+    const interfaceCards = Object.keys(labels).map((field) => `<div class="translation-card">${translationInput('interface', 0, field, labels[field], data.interfaceText.th[field], data.interfaceText.en[field])}</div>`).join('');
+    const queue = data.queue || {};
+    const queueCards = `<div class="translation-card"><span class="translation-card-title">QUEUE</span>${translationInput('queue', 0, 'title', 'ชื่อหน้า', queue.title, queue.titleEn)}${translationInput('queue', 0, 'details', 'รายละเอียด', queue.details, queue.detailsEn, true)}${translationInput('queue', 0, 'status', 'สถานะ', queue.status, queue.statusEn)}</div>`;
+    const character = data.characterSheet || {};
+    const characterCards = `<div class="translation-card"><span class="translation-card-title">OC CHARACTER SHEET</span>${translationInput('characterSheet', 0, 'title', 'ชื่อหัวข้อ', character.title, character.titleEn)}</div>`;
+    const commissionCards = data.commission.map((item, index) => `<div class="translation-card"><span class="translation-card-title">COMMISSION ${index + 1} · ${escapeAdmin(item.title || '')}</span>${translationInput('commission', index, 'category', 'หมวดหมู่', item.category, item.categoryEn)}${translationInput('commission', index, 'title', 'ชื่อรายการ', item.title, item.titleEn)}${translationInput('commission', index, 'details', 'รายละเอียด', item.details, item.detailsEn, true)}</div>`).join('');
+    const addonCards = data.addons.map((item, index) => `<div class="translation-card"><span class="translation-card-title">ADD-ON ${index + 1} · ${escapeAdmin(item?.[0] || '')}</span>${translationInput('addons', index, 'name', 'ชื่อ Add-on', item?.[0], item?.[2])}${translationInput('addons', index, 'price', 'ราคา', item?.[1], item?.[3])}</div>`).join('');
+    const galleryCards = data.gallery.map((item, index) => `<div class="translation-card"><span class="translation-card-title">GALLERY ${index + 1} · ${escapeAdmin(item.title || '')}</span>${translationInput('gallery', index, 'title', 'ชื่อผลงาน', item.title, item.titleEn)}${translationInput('gallery', index, 'tag', 'ป้ายกำกับ', item.tag, item.tagEn)}${translationInput('gallery', index, 'description', 'รายละเอียด', item.description, item.descriptionEn, true)}</div>`).join('');
+    const termCards = data.terms.map((item, index) => `<div class="translation-card"><span class="translation-card-title">TOS ${index + 1} · ${escapeAdmin(item.title || '')}</span>${translationInput('terms', index, 'title', 'ชื่อหัวข้อ', item.title, item.titleEn)}${translationInput('terms', index, 'body', 'รายละเอียด', item.body, item.bodyEn, true)}</div>`).join('');
+    root.innerHTML = [translationGroup('ข้อความปุ่มและเมนู', interfaceCards, true), translationGroup('หน้าแรก', characterCards), translationGroup('Queue', queueCards), translationGroup('Commission', commissionCards), translationGroup('Add-ons', addonCards), translationGroup('My Little Gallery', galleryCards), translationGroup('TOS', termCards)].join('');
+    setMessage('translation-message', 'แก้ข้อความแล้วกด “บันทึกและเผยแพร่” ด้านล่าง');
+  } catch (error) { setMessage('translation-message', `เปิดคำแปลไม่ได้: ${error.message}`, true); }
+}
+
+function updateTranslation(event) {
+  const input = event.target.closest('[data-translation-group]');
+  if (!input) return;
+  try {
+    const data = readDraft();
+    const { translationGroup: group, translationField: field, translationLang: lang } = input.dataset;
+    const index = Number(input.dataset.translationIndex || 0);
+    const value = input.value;
+    if (group === 'interface') {
+      data.interfaceText = data.interfaceText || structuredClone(translationInterfaceDefaults);
+      data.interfaceText[lang] = data.interfaceText[lang] || {};
+      data.interfaceText[lang][field] = value;
+    } else if (group === 'addons') {
+      const item = data.addons[index];
+      if (!item) throw new Error('ไม่พบ Add-on ที่เลือก');
+      const slot = field === 'name' ? (lang === 'en' ? 2 : 0) : (lang === 'en' ? 3 : 1);
+      item[slot] = value;
+    } else {
+      const target = group === 'queue' || group === 'characterSheet' ? data[group] : data[group]?.[index];
+      if (!target) throw new Error('ไม่พบรายการที่เลือก');
+      target[lang === 'en' ? `${field}En` : field] = value;
+    }
+    $('content-json').value = JSON.stringify(data, null, 2);
+    setMessage('translation-message', 'อัปเดตคำแปลในข้อมูลร่างแล้ว · กด “บันทึกและเผยแพร่” เพื่อใช้งานจริง');
+  } catch (error) { setMessage('translation-message', error.message, true); }
 }
 
 function readQueueUrl() {
@@ -309,7 +385,7 @@ async function uploadCharacterSheet() {
     await uploadBytes(imageRef, file, { contentType: file.type, cacheControl: 'public,max-age=3600' });
     const image = await getDownloadURL(imageRef);
     const data = readDraft();
-    data.characterSheet = { title, image };
+    data.characterSheet = { ...(data.characterSheet || {}), title, image };
     $('content-json').value = JSON.stringify(data, null, 2);
     setMessage('character-message', 'อัปโหลดแล้ว · กด “บันทึกและเผยแพร่” เพื่อแสดงรูปใหม่');
   } catch (error) { setMessage('character-message', `อัปโหลดรูปไม่ได้: ${error.message}`, true); }
@@ -720,7 +796,7 @@ function applyAddon() {
     const price = $('addon-price').value.trim();
     if (!name || !price) throw new Error('กรุณาใส่ชื่อและราคา Add-on');
     const data = readDraft();
-    if (editingAddonIndex >= 0) data.addons[editingAddonIndex] = [name, price];
+    if (editingAddonIndex >= 0) data.addons[editingAddonIndex] = [name, price, data.addons[editingAddonIndex]?.[2] || '', data.addons[editingAddonIndex]?.[3] || ''];
     else data.addons.push([name, price]);
     $('content-json').value = JSON.stringify(data, null, 2);
     const message = editingAddonIndex >= 0 ? 'แก้ไข Add-on แล้ว' : 'เพิ่ม Add-on แล้ว';
@@ -847,7 +923,7 @@ function applyTosItem() {
     const title = $('tos-title').value.trim();
     const body = $('tos-body').value.trim();
     if (!title || !body) throw new Error('กรุณาใส่ชื่อหัวข้อและรายละเอียด');
-    data.terms[index] = { title, icon: $('tos-icon').value.trim() || '♡', body };
+    data.terms[index] = { ...data.terms[index], title, icon: $('tos-icon').value.trim() || '♡', body };
     $('content-json').value = JSON.stringify(data, null, 2);
     renderTosAdmin(index);
     setMessage('tos-message', 'แก้ไขหัวข้อแล้ว · กด “บันทึกและเผยแพร่” เพื่ออัปเดตหน้าเว็บ');
@@ -935,7 +1011,8 @@ $('contact-items').addEventListener('click', (event) => {
   if (editButton) editContact(Number(editButton.dataset.editContact));
   if (deleteButton) deleteContact(Number(deleteButton.dataset.deleteContact));
 });
-$('content-json').addEventListener('change', () => { renderGalleryAdmin(); renderCommissionAdmin(); renderAddonsAdmin(); renderTosAdmin(); renderMusicAdmin(); renderContactsAdmin(); });
+$('translation-sections').addEventListener('input', updateTranslation);
+$('content-json').addEventListener('change', () => { renderGalleryAdmin(); renderCommissionAdmin(); renderAddonsAdmin(); renderTosAdmin(); renderMusicAdmin(); renderContactsAdmin(); renderTranslationsAdmin(); });
 window.addEventListener('hashchange', showAdminPage);
 showAdminPage();
 

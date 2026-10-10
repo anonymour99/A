@@ -55,13 +55,17 @@ function localized(item, key) {
   return siteLanguage === 'en' ? item[`${key}En`] || item[key] || '' : item[key] || '';
 }
 
-const interfaceText = {
-  th: { home: 'หน้าหลัก', commission: 'Commission', queue: 'คิวงาน', gallery: 'My Little Gallery', tos: 'ข้อตกลง', back: '← หน้าแรก', contact: 'ติดต่อจองคิว ↗', details: 'สอบถามรายละเอียด ↗', language: 'EN' },
-  en: { home: 'Home', commission: 'Commission', queue: 'Queue', gallery: 'My Little Gallery', tos: 'Terms', back: '← Home', contact: 'Book a commission ↗', details: 'Ask for details ↗', language: 'TH' }
+const defaultInterfaceText = {
+  th: { home: 'หน้าหลัก', commission: 'Commission', queue: 'คิวงาน', gallery: 'My Little Gallery', tos: 'ข้อตกลง', back: '← หน้าแรก', contact: 'ติดต่อจองคิว ↗', details: 'สอบถามรายละเอียด ↗', addonName: 'รายการ', addonPrice: 'ราคาเริ่มต้น (THB)', galleryOriginal: 'เปิดแกลเลอรีต้นฉบับ ↗', language: 'EN' },
+  en: { home: 'Home', commission: 'Commission', queue: 'Queue', gallery: 'My Little Gallery', tos: 'Terms', back: '← Home', contact: 'Book a commission ↗', details: 'Ask for details ↗', addonName: 'Add-on', addonPrice: 'Starting price (THB)', galleryOriginal: 'Open original gallery ↗', language: 'TH' }
 };
 
+function currentInterfaceText() {
+  return { ...defaultInterfaceText[siteLanguage], ...(content.interfaceText?.[siteLanguage] || {}) };
+}
+
 function applyInterfaceLanguage() {
-  const text = interfaceText[siteLanguage];
+  const text = currentInterfaceText();
   document.documentElement.lang = siteLanguage;
   const navLabels = { 'index.html': `⌂ ${text.home}`, 'commission.html': `♡ ${text.commission}`, 'queue.html': `☷ ${text.queue}`, 'gallery.html': `▧ ${text.gallery}`, 'tos.html': `✎ ${text.tos}` };
   document.querySelectorAll('.airy-nav a, .main-nav a').forEach((link) => {
@@ -94,7 +98,7 @@ function renderCommission() {
   const list = byId('commission-list');
   if (!list) return;
   list.innerHTML = content.commission.map((item, index) => {
-    const image = item.image ? `<img class="commission-image" src="${safeHref(item.image)}" alt="${escapeText(item.title)}" loading="lazy" />` : '';
+    const image = item.image ? `<img class="commission-image" src="${safeHref(item.image)}" alt="${escapeText(localized(item, 'title'))}" loading="lazy" />` : '';
     return `<article class="commission-card reveal ${image ? 'has-preview' : ''}" data-symbol="${escapeText(item.symbol || '✦')}"><span class="small-index">${String(index + 1).padStart(2, '0')} / ${escapeText(localized(item, 'category'))}</span>${image}<h3>${escapeText(localized(item, 'title'))}</h3><p>${escapeText(localized(item, 'details'))}</p>${commissionVideoHtml(item)}<div class="commission-bottom"><div class="price">${escapeText(item.price)} <small>THB</small></div><a href="https://vgen.co/anonymour_" target="_blank" rel="noreferrer">สอบถามรายละเอียด ↗</a></div></article>`;
   }).join('');
 }
@@ -107,7 +111,7 @@ function renderGallery(filter = 'all') {
     const media = getMedia(item);
     const image = item.image || media.thumbnail;
     const preview = image
-      ? `<img class="work-image" src="${safeHref(image)}" alt="${escapeText(item.title)}" loading="lazy" />`
+      ? `<img class="work-image" src="${safeHref(image)}" alt="${escapeText(localized(item, 'title'))}" loading="lazy" />`
       : media.type === 'video'
         ? `<video class="work-image" src="${safeHref(media.src)}" muted playsinline preload="metadata"></video>`
         : '';
@@ -117,10 +121,16 @@ function renderGallery(filter = 'all') {
 }
 
 function renderAddons() {
+  const text = currentInterfaceText();
+  const rows = content.addons.map((item) => {
+    const label = siteLanguage === 'en' ? item?.[2] || item?.[0] : item?.[0];
+    const price = siteLanguage === 'en' ? item?.[3] || item?.[1] : item?.[1];
+    return [label || '', price || ''];
+  });
   const list = byId('addons-list');
-  if (list) list.innerHTML = `<div class="price-table-head"><span>รายการ</span><span>ราคาเริ่มต้น (THB)</span></div>${content.addons.map(([label, price]) => `<div class="price-row"><span>${escapeText(label)}</span><b>${escapeText(price)}</b></div>`).join('')}`;
+  if (list) list.innerHTML = `<div class="price-table-head"><span>${escapeText(text.addonName)}</span><span>${escapeText(text.addonPrice)}</span></div>${rows.map(([label, price]) => `<div class="price-row"><span>${escapeText(label)}</span><b>${escapeText(price)}</b></div>`).join('')}`;
   const preview = byId('addons-preview');
-  if (preview) preview.innerHTML = content.addons.map(([label, price]) => `<div class="addon-preview-row"><span>${escapeText(label)}</span><b>${escapeText(price)}</b></div>`).join('');
+  if (preview) preview.innerHTML = rows.map(([label, price]) => `<div class="addon-preview-row"><span>${escapeText(label)}</span><b>${escapeText(price)}</b></div>`).join('');
 }
 
 function renderTerms() {
@@ -146,9 +156,9 @@ function renderSocials() {
 
 function renderQueue() {
   const queue = content.queue || fallbackContent.queue;
-  document.querySelectorAll('[data-queue="title"]').forEach((node) => node.textContent = queue.title || fallbackContent.queue.title);
-  document.querySelectorAll('[data-queue="details"]').forEach((node) => node.textContent = queue.details || fallbackContent.queue.details);
-  document.querySelectorAll('[data-queue="status"]').forEach((node) => node.textContent = queue.status || fallbackContent.queue.status);
+  document.querySelectorAll('[data-queue="title"]').forEach((node) => node.textContent = localized(queue, 'title') || fallbackContent.queue.title);
+  document.querySelectorAll('[data-queue="details"]').forEach((node) => node.textContent = localized(queue, 'details') || fallbackContent.queue.details);
+  document.querySelectorAll('[data-queue="status"]').forEach((node) => node.textContent = localized(queue, 'status') || fallbackContent.queue.status);
   const frame = byId('queue-embed');
   const message = byId('queue-embed-message');
   const loading = byId('queue-loading');
@@ -160,7 +170,7 @@ function renderQueue() {
         frame.dispatchEvent(new Event('queue:loading'));
         frame.src = links.embedUrl;
       }
-      frame.title = queue.title || 'Commission queue on Notion';
+      frame.title = localized(queue, 'title') || 'Commission queue on Notion';
       frame.hidden = false;
     }
     if (message) message.hidden = true;
@@ -218,9 +228,9 @@ function renderCharacterSheet() {
   if (!image) return;
   const sheet = content.characterSheet || fallbackContent.characterSheet;
   image.src = safeHref(sheet.image || fallbackContent.characterSheet.image);
-  image.alt = sheet.title || 'OC Character Sheet';
+  image.alt = localized(sheet, 'title') || 'OC Character Sheet';
   const title = byId('character-sheet-title');
-  if (title) title.textContent = sheet.title || 'OC Character Sheet';
+  if (title) title.textContent = localized(sheet, 'title') || 'OC Character Sheet';
 }
 
 function escapeText(value) {
@@ -314,16 +324,16 @@ function setupInteractions() {
     if (!item) return;
     const media = getMedia(item);
     const preview = media.type === 'embed'
-      ? `<iframe class="work-video" src="${safeHref(media.src)}" title="${escapeText(item.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+      ? `<iframe class="work-video" src="${safeHref(media.src)}" title="${escapeText(localized(item, 'title'))}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
       : media.type === 'video'
         ? `<video class="work-video" src="${safeHref(media.src)}" poster="${item.image ? safeHref(item.image) : ''}" controls playsinline preload="metadata"></video>`
         : item.image
-          ? `<img class="work-image" src="${safeHref(item.image)}" alt="${escapeText(item.title)}" />`
+          ? `<img class="work-image" src="${safeHref(item.image)}" alt="${escapeText(localized(item, 'title'))}" />`
           : escapeText(item.icon || '▶');
     const detail = byId('work-detail');
     const dialog = byId('work-dialog');
     if (!detail || !dialog) return;
-    detail.innerHTML = `<div class="work-detail-art" style="--art-mid:${safeColor(item.mid, '#82619b')};--art-deep:${safeColor(item.deep, '#282035')}">${preview}</div><div class="work-detail-copy"><span class="small-index">${escapeText(item.tag)}</span><h2>${escapeText(item.title)}</h2><p>${escapeText(item.description)}</p><a class="text-link" href="${safeHref(sourceUrl + '#gallery')}" target="_blank" rel="noreferrer">เปิดแกลเลอรีต้นฉบับ ↗</a></div>`;
+    detail.innerHTML = `<div class="work-detail-art" style="--art-mid:${safeColor(item.mid, '#82619b')};--art-deep:${safeColor(item.deep, '#282035')}">${preview}</div><div class="work-detail-copy"><span class="small-index">${escapeText(localized(item, 'tag'))}</span><h2>${escapeText(localized(item, 'title'))}</h2><p>${escapeText(localized(item, 'description'))}</p><a class="text-link" href="${safeHref(sourceUrl + '#gallery')}" target="_blank" rel="noreferrer">${escapeText(currentInterfaceText().galleryOriginal)}</a></div>`;
     dialog.showModal();
   };
   const gallery = byId('gallery-grid');
