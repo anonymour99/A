@@ -134,14 +134,13 @@ function renderAddons() {
     const label = siteLanguage === 'en' ? item?.[2] || item?.[0] : item?.[0];
     const price = siteLanguage === 'en' ? item?.[3] || item?.[1] : item?.[1];
     const support = siteLanguage === 'en' ? item?.[5] || item?.[4] : item?.[4];
-    const details = siteLanguage === 'en' ? item?.[7] || item?.[6] : item?.[6];
-    return [label || '', support || (siteLanguage === 'en' ? 'Ask first' : 'สอบถาม'), price || '', details || (siteLanguage === 'en' ? 'Please ask for compatibility and scope before booking.' : 'กรุณาสอบถามรายละเอียดและขอบเขตงานก่อนจองคิว')];
+    return [label || '', support || (siteLanguage === 'en' ? 'Ask first' : 'สอบถาม'), price || ''];
   });
-  const table = (prefix) => `<div class="addon-table-head"><span>${escapeText(text.addonName)}</span><span>${escapeText(text.addonSupport)}</span><span>${escapeText(text.addonPrice)}</span><i aria-hidden="true"></i></div>${rows.map(([label, support, price, details], index) => `<article class="addon-item"><button class="addon-trigger" type="button" aria-expanded="false" aria-controls="${prefix}-addon-detail-${index}"><span>${escapeText(label)}</span><em>${escapeText(support)}</em><b>${escapeText(price)}</b><i aria-hidden="true">＋</i></button><div class="addon-panel" id="${prefix}-addon-detail-${index}"><div><strong>${escapeText(text.addonDetails)}</strong><p>${escapeText(details)}</p></div></div></article>`).join('')}`;
+  const table = `<div class="addon-table-head"><span>${escapeText(text.addonName)}</span><span>${escapeText(text.addonSupport)}</span><span>${escapeText(text.addonPrice)}</span></div>${rows.map(([label, support, price]) => `<div class="addon-table-row"><span>${escapeText(label)}</span><em>${escapeText(support)}</em><b>${escapeText(price)}</b></div>`).join('')}`;
   const list = byId('addons-list');
-  if (list) list.innerHTML = table('modal');
+  if (list) list.innerHTML = table;
   const preview = byId('addons-preview');
-  if (preview) preview.innerHTML = table('preview');
+  if (preview) preview.innerHTML = table;
 }
 
 function renderTerms() {
@@ -333,7 +332,8 @@ function setupInteractions() {
   if (characterDialog) characterDialog.addEventListener('click', (event) => { if (event.target === characterDialog) characterDialog.close(); });
   const tosList = byId('tos-list');
   if (tosList) tosList.addEventListener('click', (event) => { const button = event.target.closest('.tos-trigger'); if (!button) return; const item = button.closest('.tos-item'); item.classList.toggle('open'); button.setAttribute('aria-expanded', item.classList.contains('open')); });
-  [byId('addons-preview'), byId('addons-list')].filter(Boolean).forEach((root) => root.addEventListener('click', (event) => { const button = event.target.closest('.addon-trigger'); if (!button) return; const item = button.closest('.addon-item'); item.classList.toggle('open'); button.setAttribute('aria-expanded', item.classList.contains('open')); }));
+  const addonsCollapse = byId('addons-collapse');
+  if (addonsCollapse) addonsCollapse.addEventListener('click', () => { const card = addonsCollapse.closest('.addons-card'); const collapsed = card.classList.toggle('is-collapsed'); addonsCollapse.setAttribute('aria-expanded', String(!collapsed)); addonsCollapse.setAttribute('aria-label', collapsed ? 'เปิดตาราง Add-ons' : 'พับตาราง Add-ons'); addonsCollapse.textContent = collapsed ? '＋' : '−'; });
   const showWork = (card) => {
     const item = content.gallery[Number(card.dataset.work)];
     if (!item) return;
