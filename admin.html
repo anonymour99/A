@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#17111f" />
+    <title>Anonymour · content studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=20261010k" />
+    <link rel="stylesheet" href="./admin.css?v=20261010k" />
+    <script src="./firebase-config.js?v=20261010k"></script>
+    <script src="./admin-config.js?v=20261010k"></script>
+    <script type="module" src="./admin.js?v=20261010k"></script>
+  </head>
+  <body class="admin-page">
+    <main class="admin-shell">
+      <header class="admin-top"><a class="wordmark" href="./index.html"><span class="brand-mark">a.</span><span>anonymour<small>CONTENT STUDIO</small></span></a><a class="text-link" href="./index.html">กลับหน้าเว็บไซต์ ↗</a></header>
+      <section class="admin-intro"><h1>Content <em>studio.</em></h1><p>จัดการราคา ผลงาน เงื่อนไข และช่องทางติดต่อที่แสดงบนเว็บไซต์</p></section>
+      <section class="admin-panel">
+        <div class="admin-auth" id="auth-panel">
+          <label>อีเมลผู้ดูแล<input id="email" type="email" autocomplete="username" placeholder="you@example.com" /></label>
+          <label>รหัสผ่าน<input id="password" type="password" autocomplete="current-password" placeholder="รหัสผ่าน Firebase Auth" /></label>
+          <button id="login" class="button button-light">เข้าสู่ระบบ <span>↗</span></button>
+          <p id="auth-message" class="admin-message">กรุณาตั้งค่า Firebase และอีเมลผู้ดูแลก่อนเข้าสู่ระบบ</p>
+        </div>
+        <div id="editor-panel" hidden>
+          <div class="editor-heading"><div><span class="small-index">FIRESTORE · publicContent/site</span><h2 id="admin-current-page">จัดการหน้าแรก</h2></div><button id="logout" class="button button-dark">ออกจากระบบ</button></div>
+          <nav class="admin-section-nav" aria-label="เลือกหน้าที่ต้องการแก้ไข">
+            <a href="#home" data-admin-nav="home"><span>⌂</span>หน้าแรก</a>
+            <a href="#commission" data-admin-nav="commission"><span>♡</span>Commission</a>
+            <a href="#tos" data-admin-nav="tos"><span>✎</span>TOS</a>
+            <a href="#gallery" data-admin-nav="gallery"><span>▧</span>Gallery</a>
+            <a href="#queue" data-admin-nav="queue"><span>☷</span>Queue</a>
+            <a href="#contact" data-admin-nav="contact"><span>✉</span>ช่องทางติดต่อ</a>
+            <a href="#settings" data-admin-nav="settings"><span>⚙</span>ข้อมูลทั้งหมด</a>
+          </nav>
+          <p class="admin-help admin-page-help">เลือกหน้าจากเมนูด้านบน แล้วกด “บันทึกและเผยแพร่” หลังแก้ไขเสร็จ</p>
+
+          <section class="media-editor" data-admin-page="queue" aria-labelledby="queue-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">NOTION QUEUE</span><h3 id="queue-editor-title">บอร์ดคิวงาน</h3></div></div>
+            <div class="media-form">
+              <label class="wide-field">ลิงก์ Notion หรือโค้ด Embed<textarea id="queue-url-input" placeholder="https://your-site.notion.site/ebd/…" aria-describedby="queue-help"></textarea></label>
+            </div>
+            <p class="admin-help" id="queue-help">เผยแพร่หน้าใน Notion แล้วเลือก Embed this page → Copy code จากนั้นวางที่นี่ หรือใช้ลิงก์หน้าที่เผยแพร่ซึ่งมีรหัสหน้า บอร์ดนี้จะแสดงในหน้า Queue</p>
+            <button id="queue-apply" class="button button-dark" type="button">ใช้ลิงก์นี้</button>
+            <p id="queue-message" class="admin-message" aria-live="polite"></p>
+          </section>
+
+          <section class="media-editor" data-admin-page="home" aria-labelledby="music-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">MP3 PLAYLIST</span><h3 id="music-editor-title">เพลย์ลิสต์หน้าแรก</h3></div><button id="music-new" class="mini-button" type="button">＋ เพลงใหม่</button></div>
+            <div class="media-form">
+              <label>ชื่อเพลง<input id="music-title-input" type="text" placeholder="เช่น When You Sleep" /></label>
+              <label>ศิลปิน<input id="music-artist-input" type="text" placeholder="เช่น My Bloody Valentine" /></label>
+              <label class="wide-field">ไฟล์เพลง MP3<input id="music-file" type="file" accept="audio/mpeg,.mp3" /></label>
+            </div>
+            <div class="admin-button-row"><button id="music-upload" class="button button-dark" type="button">อัปโหลดและเพิ่มเพลง <span>↑</span></button><button id="music-save" class="mini-button" type="button" hidden>บันทึกชื่อและศิลปิน</button><button id="music-delete" class="mini-button danger-button" type="button" hidden>ลบเพลงนี้</button></div>
+            <p id="music-message" class="admin-message" aria-live="polite">รองรับไฟล์ .mp3 ขนาดไม่เกิน 25 MB</p>
+            <div id="music-items" class="gallery-admin-list"></div>
+          </section>
+
+          <section class="media-editor" data-admin-page="home" aria-labelledby="character-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">OC CHARACTER SHEET</span><h3 id="character-editor-title">รูป OC หน้าแรก</h3></div></div>
+            <div class="media-form">
+              <label>ชื่อหัวข้อ<input id="character-title-input" type="text" value="OC Character Sheet" /></label>
+              <label class="wide-field">ไฟล์รูป OC<input id="character-file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" /></label>
+            </div>
+            <button id="character-upload" class="button button-dark" type="button">อัปโหลดรูป OC <span>↑</span></button>
+            <p id="character-message" class="admin-message" aria-live="polite">รองรับ PNG, JPG และ WebP ขนาดไม่เกิน 10 MB</p>
+          </section>
+
+          <section class="media-editor" data-admin-page="commission" aria-labelledby="commission-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">COMMISSION ITEMS</span><h3 id="commission-editor-title">จัดการการ์ด Commission</h3></div></div>
+            <div class="commission-create-box"><div><strong>เพิ่มบริการ Commission</strong><small>สร้างการ์ดใหม่ แล้วใส่ชื่อ ราคา รายละเอียด รูป หรือวิดีโอได้</small></div><button id="commission-add" class="button button-light" type="button">＋ เพิ่ม Commission ใหม่</button></div>
+            <div class="media-form">
+              <label class="wide-field">รายการคอมมิชชั่น<select id="commission-item"></select></label>
+              <label>หมวดหมู่<input id="commission-category" type="text" placeholder="เช่น LIVE2D · RIGGING" /></label>
+              <label>ชื่อรายการ<input id="commission-title" type="text" placeholder="เช่น Full body rigging" /></label>
+              <label>ราคา THB<input id="commission-price" type="text" placeholder="เช่น 8,000" /></label>
+              <label>สัญลักษณ์<input id="commission-symbol" type="text" placeholder="เช่น ✦" /></label>
+              <label class="wide-field">รายละเอียด<textarea id="commission-details" placeholder="รายละเอียด ระยะเวลา และเงื่อนไขย่อ"></textarea></label>
+              <label class="wide-field">ลิงก์รูปพรีวิว<input id="commission-image-url" type="url" placeholder="https://.../preview.jpg" /></label>
+              <label class="wide-field">หรืออัปโหลดรูปจากอุปกรณ์<input id="commission-image-file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" /></label>
+              <label class="wide-field">ลิงก์ YouTube หรือไฟล์วิดีโอ<input id="commission-video-url" type="url" placeholder="https://www.youtube.com/watch?v=…" /></label>
+            </div>
+            <div class="admin-button-row">
+              <button id="commission-save-item" class="button button-dark" type="button">บันทึกข้อมูลรายการ ✓</button>
+              <button id="commission-delete" class="mini-button danger-button" type="button">ลบรายการนี้</button>
+            </div>
+            <div class="admin-button-row">
+              <button id="commission-image-upload" class="button button-dark" type="button">อัปโหลดรูป ↑</button>
+              <button id="commission-image-remove" class="mini-button" type="button">นำรูปออก</button>
+              <button id="commission-video-apply" class="button button-dark" type="button">ใช้ลิงก์วิดีโอ</button>
+            </div>
+            <div class="media-form commission-upload-form">
+              <label class="wide-field">หรืออัปโหลดจากอุปกรณ์<input id="commission-video-file" type="file" accept="video/mp4,video/webm,.mp4,.webm" aria-describedby="commission-video-help" /></label>
+            </div>
+            <p id="commission-video-help" class="admin-help">MP4 / WebM ไม่เกิน 100 MB · วิดีโอจะแสดงใต้รายละเอียดรายการที่เลือก ใช้ลิงก์หรืออัปโหลดแล้วกด “บันทึกและเผยแพร่”</p>
+            <button id="commission-video-upload" class="button button-dark" type="button">อัปโหลดวิดีโอ ↑</button>
+            <button id="commission-video-remove" class="mini-button" type="button">นำวิดีโอออกจากรายการ</button>
+            <p id="commission-video-message" class="admin-message" aria-live="polite"></p>
+            <div id="commission-video-preview"></div>
+          </section>
+
+          <section class="media-editor" data-admin-page="commission" aria-labelledby="addons-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">ADD-ONS</span><h3 id="addons-editor-title">จัดการราคา Add-ons</h3></div><button id="addon-new" class="mini-button" type="button">＋ รายการใหม่</button></div>
+            <div class="media-form">
+              <label>ชื่อ Add-on<input id="addon-name" type="text" placeholder="เช่น Face expression" /></label>
+              <label>ราคา<input id="addon-price" type="text" placeholder="เช่น เริ่มต้น 500 ฿" /></label>
+            </div>
+            <div class="admin-button-row"><button id="addon-apply" class="button button-dark" type="button">เพิ่ม Add-on ＋</button><button id="addon-cancel" class="mini-button" type="button" hidden>ยกเลิกแก้ไข</button></div>
+            <p id="addon-message" class="admin-message" aria-live="polite"></p>
+            <div id="addon-items" class="gallery-admin-list"></div>
+          </section>
+
+          <section class="media-editor" data-admin-page="gallery" aria-labelledby="media-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">GALLERY VIDEO</span><h3 id="media-editor-title">เพิ่มวิดีโอผลงาน</h3></div><button id="gallery-cancel" class="mini-button" type="button" hidden>ยกเลิกการแก้ไข</button></div>
+            <div class="media-form">
+              <label>ชื่อผลงาน<input id="gallery-title" type="text" placeholder="เช่น Live2D Showcase" /></label>
+              <label>ชื่อไฟล์ / ป้ายวิดีโอ<input id="gallery-filename" type="text" placeholder="เช่น showcase-01.mp4" /></label>
+              <label>หมวด<select id="gallery-category"><option value="rigging">Live2D Rigging</option><option value="art">Art & Emote</option><option value="motion">Motion / Animation</option></select></label>
+              <label>ป้ายกำกับ<input id="gallery-tag" type="text" placeholder="เช่น LIVE2D RIGGING" /></label>
+              <label class="wide-field">ลิงก์วิดีโอ<input id="gallery-video" type="url" placeholder="YouTube, Google Drive หรือไฟล์ .mp4 / .webm" /></label>
+              <label class="wide-field">หรืออัปโหลดไฟล์วิดีโอ<input id="gallery-video-file" type="file" accept="video/mp4,video/webm,.mp4,.webm" /></label>
+              <label class="wide-field">ลิงก์ภาพปก (ไม่บังคับ)<input id="gallery-image" type="url" placeholder="https://.../thumbnail.jpg" /></label>
+              <label class="wide-field">หรืออัปโหลดรูปจากอุปกรณ์<input id="gallery-image-file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" /></label>
+              <label class="wide-field">รายละเอียด<textarea id="gallery-description" placeholder="รายละเอียดสั้น ๆ ของผลงาน"></textarea></label>
+            </div>
+            <div class="admin-button-row"><button id="gallery-apply" class="button button-dark" type="button">เพิ่มผลงานใน My Little Gallery <span>＋</span></button><button id="gallery-upload" class="button button-dark" type="button">อัปโหลดไฟล์วิดีโอ ↑</button><button id="gallery-image-upload" class="button button-dark" type="button">อัปโหลดรูป ↑</button></div>
+            <p id="gallery-message" class="admin-message" aria-live="polite"></p>
+            <div id="gallery-preview" class="admin-gallery-preview"><span>พรีวิวรูปหรือวิดีโอจะแสดงตรงนี้</span></div>
+            <div id="gallery-items" class="gallery-admin-list"></div>
+          </section>
+
+          <section class="media-editor" data-admin-page="tos" aria-labelledby="tos-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">TERMS OF SERVICE</span><h3 id="tos-editor-title">จัดการหัวข้อ TOS</h3></div><button id="tos-add" class="mini-button" type="button">＋ เพิ่มหัวข้อ</button></div>
+            <div class="media-form">
+              <label class="wide-field">หัวข้อที่ต้องการแก้ไข<select id="tos-item"></select></label>
+              <label>ชื่อหัวข้อ<input id="tos-title" type="text" placeholder="เช่น การชำระเงิน" /></label>
+              <label>ไอคอน<input id="tos-icon" type="text" placeholder="เช่น 💰" /></label>
+              <label class="wide-field">รายละเอียด<textarea id="tos-body" rows="9" placeholder="รายละเอียดเงื่อนไข"></textarea></label>
+            </div>
+            <div class="admin-button-row"><button id="tos-save" class="button button-dark" type="button">บันทึกหัวข้อนี้ ✓</button><button id="tos-delete" class="mini-button danger-button" type="button">ลบหัวข้อนี้</button></div>
+            <p id="tos-message" class="admin-message" aria-live="polite"></p>
+          </section>
+
+          <section class="media-editor" data-admin-page="contact" aria-labelledby="contact-editor-title">
+            <div class="media-editor-heading"><div><span class="small-index">CONTACT LINKS</span><h3 id="contact-editor-title">จัดการช่องทางติดต่อ</h3></div><button id="contact-new" class="mini-button" type="button">＋ เพิ่มช่องทาง</button></div>
+            <div class="media-form">
+              <label>ชื่อช่องทาง<input id="contact-name" type="text" placeholder="เช่น Discord, X, VGen" /></label>
+              <label>ลิงก์<input id="contact-url" type="url" placeholder="https://..." /></label>
+            </div>
+            <div class="admin-button-row"><button id="contact-apply" class="button button-dark" type="button">เพิ่มช่องทาง ＋</button><button id="contact-cancel" class="mini-button" type="button" hidden>ยกเลิกแก้ไข</button></div>
+            <p id="contact-message" class="admin-message" aria-live="polite"></p>
+            <div id="contact-items" class="gallery-admin-list"></div>
+          </section>
+
+          <section class="admin-settings-page" data-admin-page="settings">
+          <p class="admin-help json-help">ข้อมูลส่วนอื่นสามารถแก้ไขใน JSON ด้านล่างได้</p>
+          <label class="json-label" for="content-json">ข้อมูลเว็บไซต์ (JSON)</label>
+          <textarea id="content-json" spellcheck="false" aria-label="ข้อมูลเว็บไซต์แบบ JSON"></textarea>
+          <details class="schema-help"><summary>รูปแบบและตัวอย่างฟิลด์</summary><p>แก้เฉพาะส่วนที่ต้องการได้ ฟิลด์ที่ไม่มีจะใช้ค่าเริ่มต้นในหน้าเว็บ</p><pre>{
+  "status": "STATUS : OPEN",
+  "musicPlaylist": [{ "title": "ชื่อเพลง", "artist": "ชื่อศิลปิน", "url": "Firebase Storage MP3 URL" }],
+  "characterSheet": { "title": "OC Character Sheet", "image": "Firebase Storage image URL" },
+  "queue": { "title": "Commission queue", "details": "เช็กคิวและความคืบหน้าล่าสุดได้จากบอร์ด Notion ค่ะ", "status": "อัปเดตบน Notion", "url": "https://tartan-lettuce-a11.notion.site/Commission-queue-ba3921cc5e72830bbbc18147ef988254" },
+  "commission": [{ "category": "LIVE2D · RIGGING", "title": "Full body rigging", "details": "ระยะเวลา 7–30 วัน", "price": "8,000", "symbol": "✳", "image": "https://…/preview.jpg", "video": "https://youtu.be/VIDEO_ID" }],
+  "addons": [["Face expression", "เริ่มต้น 500 ฿"]],
+  "gallery": [{ "title": "Moonlit rig", "fileName": "moonlit-rig.mp4", "category": "rigging", "tag": "LIVE2D RIGGING", "video": "https://youtu.be/VIDEO_ID", "image": "https://…/cover.jpg", "description": "รายละเอียดผลงาน" }],
+  "terms": [{ "title": "การชำระเงิน", "icon": "฿", "body": "รายละเอียดเงื่อนไข" }],
+  "socials": [["VGen", "https://vgen.co/your-profile"]]
+}</pre></details>
+          </section>
+          <div class="editor-actions admin-publish-bar"><span id="save-message" class="admin-message" aria-live="polite"></span><button id="save" class="button button-light">บันทึกและเผยแพร่ <span>↗</span></button></div>
+        </div>
+      </section>
+      <p class="admin-footer">ผู้ดูแลที่ลงชื่อเข้าใช้ได้และมีอีเมลตรงกับ ADMIN_EMAIL เท่านั้นจึงบันทึกเนื้อหาได้</p>
+    </main>
+  </body>
+</html>

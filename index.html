@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf6ff" />
+    <meta name="description" content="Anonymour — Live2D rigging, emotes, animation and chibi commission." />
+    <title>Anonymour</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=20261010j" />
+    <script src="./firebase-config.js?v=20261010i"></script>
+    <script type="module" src="./app.js?v=20261010i"></script>
+  </head>
+  <body class="home-page airy-home">
+    <div class="sparkle-layer" aria-hidden="true"></div>
+    <header class="airy-header">
+      <a class="airy-brand" href="./index.html">anonymour <span>✦</span></a>
+      <button class="airy-menu-toggle" type="button" aria-expanded="false">menu</button>
+      <nav class="airy-nav" aria-label="เมนูหลัก">
+        <a href="./commission.html">commission</a><a href="./tos.html">tos</a><a href="./gallery.html">my little gallery</a><a href="./queue.html">queue</a>
+      </nav>
+    </header>
+    <main class="airy-main airy-with-sidebar">
+      <section class="airy-hero">
+        <div class="airy-copy">
+          <h1>Anonymour</h1>
+          <section class="airy-about" aria-labelledby="about-heading">
+            <h2 id="about-heading">about me</h2>
+            <p class="about-name">: Anonymour , May</p>
+            <p class="airy-role">Live2D Rigger / Part-time Streamer</p>
+            <p class="about-note">Cat person. Nothing much else to say just Anonymour.</p>
+          </section>
+          <span class="airy-status"><i></i><span data-content="status">STATUS : OPEN</span></span>
+          <div class="airy-core-links">
+            <a class="core-commission" href="./commission.html"><small>START HERE</small><strong>commission</strong><span>↗</span></a>
+            <a href="./tos.html"><small>READ FIRST</small><strong>tos</strong><span>↗</span></a>
+            <a href="./queue.html"><small>NOTION</small><strong>queue</strong><span>↗</span></a>
+            <a href="./gallery.html"><small>WORKS</small><strong>gallery</strong><span>↗</span></a>
+          </div>
+          <div class="airy-inline-actions"><a class="airy-text-link" href="./gallery.html">view my little gallery <span>↗</span></a><button class="airy-sheet-link" id="character-sheet-open" type="button">✦ OC character sheet</button></div>
+        </div>
+        <div class="airy-portrait">
+          <p class="portrait-note">ANONYMOUR<br /><span>live2d · animation · chibi</span></p>
+          <div class="portrait-frame"><img src="https://anonymour.carrd.co/assets/images/image01.jpg?v=f1c65cb3" alt="Anonymour" /></div>
+          <span class="portrait-spark spark-a">✦</span><span class="portrait-spark spark-b">♡</span><span class="portrait-spark spark-c">✧</span>
+        </div>
+      </section>
+      <aside class="airy-tools home-connect-row" aria-label="ช่องทางติดต่อและเพลง">
+        <section class="home-contact-card" aria-labelledby="contact-heading">
+          <h2 class="home-card-title" id="contact-heading"><span aria-hidden="true">♡</span>ช่องทางติดต่อ</h2>
+          <nav class="contact-list" id="home-socials" aria-label="ช่องทางติดต่อ"></nav>
+          <a class="contact-card-cta" data-contact="vgen" href="https://vgen.co/anonymour_" target="_blank" rel="noreferrer">สอบถามรายละเอียดงาน ↗</a>
+        </section>
+        <section class="custom-player" data-player-state="empty">
+          <audio id="music-audio" preload="metadata"></audio><h2 class="player-card-title">♫ เพลย์ลิสต์ของเรา</h2><div class="player-cover" aria-hidden="true">♫</div>
+          <div class="player-info"><small>NOW PLAYING</small><strong id="music-title">ยังไม่ได้เพิ่มเพลง</strong><span id="music-artist">เพิ่มไฟล์ MP3 จากหลังบ้าน</span></div>
+          <div class="player-controls"><button class="player-skip" id="music-previous" type="button" aria-label="เพลงก่อนหน้า" disabled>◀</button><button class="player-toggle" id="music-toggle" type="button" aria-label="เล่นเพลง" disabled>▶</button><button class="player-skip" id="music-next" type="button" aria-label="เพลงถัดไป" disabled>▶</button></div><div class="player-track"><input id="music-progress" type="range" min="0" max="100" value="0" aria-label="ตำแหน่งเพลง" disabled /><span id="music-time">0:00 / 0:00</span></div><button class="player-volume" id="music-mute" type="button" aria-label="ปิดเสียง" disabled>♪</button>
+        </section>
+      </aside>
+    </main>
+    <div class="airy-ticker"><div class="airy-ticker-track">
+      <span>welcome to anonymour’s little museum ✦ <span data-welcome-status>commission open</span></span>
+      <span aria-hidden="true">welcome to anonymour’s little museum ✦ <span data-welcome-status>commission open</span></span>
+      <span aria-hidden="true">welcome to anonymour’s little museum ✦ <span data-welcome-status>commission open</span></span>
+    </div></div>
+    <footer class="airy-footer"><span>© <span id="year"></span> Anonymour</span><span>commission · portfolio · contact</span></footer>
+    <dialog id="character-dialog" class="modal character-dialog"><button class="modal-close" aria-label="ปิด">×</button><p class="modal-kicker">OC PROFILE</p><h2 id="character-sheet-title">OC Character Sheet</h2><div class="character-sheet-frame"><img id="character-sheet-image" alt="OC Character Sheet" /></div></dialog>
+  </body>
+</html>
