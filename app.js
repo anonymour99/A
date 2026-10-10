@@ -279,7 +279,7 @@ function getMedia(item) {
   }
 
   if (/^[\w-]{11}$/.test(youtubeId)) return { type: 'embed', src: `https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0`, thumbnail: `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` };
-  if (/^[\w-]+$/.test(driveId)) return { type: 'embed', src: `https://drive.google.com/file/d/${driveId}/preview`, thumbnail: `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000` };
+  if (/^[\w-]+$/.test(driveId)) return { type: 'video', src: `/media/drive/${driveId}`, thumbnail: `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000` };
   if (videoUrl) {
     try { const url = new URL(videoUrl); if (['https:', 'http:'].includes(url.protocol)) return { type: 'video', src: url.href, thumbnail: '' }; }
     catch { /* Ignore malformed video URLs. */ }
