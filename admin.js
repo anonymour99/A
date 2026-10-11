@@ -98,7 +98,7 @@ async function loadDocument() {
   try {
     const { db, doc, getDoc } = await connectFirebase();
     const snapshot = await getDoc(doc(db, 'publicContent', 'site'));
-    const remote = snapshot.exists() ? snapshot.data() : {};
+    const remote = snapshot.exists() ? decodeFirestoreValue(snapshot.data()) : {};
     const data = {
       ...fallbackContent,
       ...remote,
@@ -165,9 +165,10 @@ async function save() {
     const { auth, db, doc, setDoc } = await connectFirebase();
     const user = auth.currentUser;
     if (!user || !user.emailVerified || user.email?.toLowerCase() !== adminEmail) throw new Error('บัญชีผู้ใช้ไม่มีสิทธิ์บันทึก');
-    const publishedData = structuredClone(data);
+    let publishedData = structuredClone(data);
     publishedData.addons = (publishedData.addons || []).map(addonObject);
     publishedData.socials = (publishedData.socials || []).map(socialObject);
+    publishedData = encodeFirestoreValue(publishedData);
     await setDoc(doc(db, 'publicContent', 'site'), publishedData);
     $('content-json').value = JSON.stringify(data, null, 2);
     $('queue-url-input').value = data.queue?.url || fallbackContent.queue.url;
@@ -229,6 +230,30 @@ function socialArray(item) {
 function socialObject(item) {
   const row = socialArray(item);
   return { label: row[0], url: row[1] };
+}
+
+function encodeFirestoreValue(value, insideArray = false) {
+  if (Array.isArray(value)) {
+    if (insideArray) {
+      const items = {};
+      value.forEach((item, index) => { items[String(index)] = encodeFirestoreValue(item, true); });
+      return { __anonymourArray: true, length: value.length, items };
+    }
+    return value.map((item) => encodeFirestoreValue(item, true));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, encodeFirestoreValue(item, insideArray)]));
+  }
+  return value;
+}
+
+function decodeFirestoreValue(value) {
+  if (Array.isArray(value)) return value.map(decodeFirestoreValue);
+  if (!value || typeof value !== 'object') return value;
+  if (value.__anonymourArray === true && value.items && typeof value.items === 'object') {
+    return Array.from({ length: Number(value.length) || 0 }, (_, index) => decodeFirestoreValue(value.items[String(index)]));
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, decodeFirestoreValue(item)]));
 }
 
 const translationInterfaceDefaults = {

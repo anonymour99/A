@@ -473,13 +473,22 @@ async function loadPublishedContent() {
     ]);
     const db = getFirestore(initializeApp(config));
     const snapshot = await getDoc(doc(db, 'publicContent', 'site'));
-    if (snapshot.exists()) content = mergeContent(fallbackContent, snapshot.data());
+    if (snapshot.exists()) content = mergeContent(fallbackContent, decodeFirestoreValue(snapshot.data()));
     render();
   } catch (error) { console.warn('Could not load published Firebase content; showing the saved starter content.', error); }
 }
 
 function mergeContent(base, incoming) {
   return { ...structuredClone(base), ...incoming, commission: incoming.commission || base.commission, addons: incoming.addons || base.addons, gallery: incoming.gallery || base.gallery, terms: incoming.terms || base.terms, socials: incoming.socials || base.socials, musicPlaylist: incoming.musicPlaylist || base.musicPlaylist };
+}
+
+function decodeFirestoreValue(value) {
+  if (Array.isArray(value)) return value.map(decodeFirestoreValue);
+  if (!value || typeof value !== 'object') return value;
+  if (value.__anonymourArray === true && value.items && typeof value.items === 'object') {
+    return Array.from({ length: Number(value.length) || 0 }, (_, index) => decodeFirestoreValue(value.items[String(index)]));
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, decodeFirestoreValue(item)]));
 }
 
 if (!document.body.classList.contains('admin-page')) {
