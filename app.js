@@ -464,18 +464,11 @@ function setupInteractions() {
 }
 
 async function loadPublishedContent() {
-  const config = window.ANONYMOUR_FIREBASE_CONFIG || {};
-  if (!config.apiKey || !config.projectId) return;
   try {
-    const [{ initializeApp }, { getFirestore, doc, getDoc }] = await Promise.all([
-      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
-      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js')
-    ]);
-    const db = getFirestore(initializeApp(config));
-    const snapshot = await getDoc(doc(db, 'publicContent', 'site'));
-    if (snapshot.exists()) content = mergeContent(fallbackContent, decodeFirestoreValue(snapshot.data()));
+    const response = await fetch('/api/content', { cache: 'no-store' });
+    if (response.ok) content = mergeContent(fallbackContent, decodeFirestoreValue(await response.json()));
     render();
-  } catch (error) { console.warn('Could not load published Firebase content; showing the saved starter content.', error); }
+  } catch (error) { console.warn('Could not load published content; showing the saved starter content.', error); }
 }
 
 function mergeContent(base, incoming) {

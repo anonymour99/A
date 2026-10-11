@@ -1,6 +1,12 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "anonymour-portfolio",
-  "compatibility_date": "2026-10-08",
-  "pages_build_output_dir": "."
+  "name": "anonymour",
+  "compatibility_date": "2026-10-11",
+  "pages_build_output_dir": ".",
+  "kv_namespaces": [
+    {
+      "binding": "CONTENT_STORE",
+      "id": "e1e8f2e4088d44bba13bff1e6415d13c"
+    }
+  ]
 }

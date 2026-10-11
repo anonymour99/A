@@ -21,14 +21,13 @@ function readyConfig() {
 
 async function connectFirebase() {
   if (firebaseServices) return firebaseServices;
-  const [{ initializeApp }, { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendEmailVerification, signOut }, { getFirestore, doc, getDoc, setDoc }, { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL }] = await Promise.all([
+  const [{ initializeApp }, { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendEmailVerification, signOut }, { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL }] = await Promise.all([
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),
-    import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js'),
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js')
   ]);
   const app = initializeApp(config);
-  firebaseServices = { auth: getAuth(app), db: getFirestore(app), storage: getStorage(app), onAuthStateChanged, signInWithEmailAndPassword, sendEmailVerification, signOut, doc, getDoc, setDoc, ref, uploadBytes, uploadBytesResumable, getDownloadURL };
+  firebaseServices = { auth: getAuth(app), storage: getStorage(app), onAuthStateChanged, signInWithEmailAndPassword, sendEmailVerification, signOut, ref, uploadBytes, uploadBytesResumable, getDownloadURL };
   onAuthStateChanged(firebaseServices.auth, async (user) => {
     if (!user) { showSignedOut(); return; }
     if (user.email?.toLowerCase() !== adminEmail) {
@@ -96,9 +95,9 @@ async function loadDocument() {
   setMessage('save-message', 'เปิดตัวแก้ไขแล้ว · กำลังตรวจข้อมูล Firebase…');
   await new Promise((resolve) => requestAnimationFrame(resolve));
   try {
-    const { db, doc, getDoc } = await connectFirebase();
-    const snapshot = await getDoc(doc(db, 'publicContent', 'site'));
-    const remote = snapshot.exists() ? decodeFirestoreValue(snapshot.data()) : {};
+    const response = await fetch('/api/content', { cache: 'no-store' });
+    if (!response.ok && response.status !== 404) throw new Error(`ระบบจัดเก็บข้อมูลตอบกลับ ${response.status}`);
+    const remote = response.ok ? decodeFirestoreValue(await response.json()) : {};
     const data = {
       ...fallbackContent,
       ...remote,
@@ -121,7 +120,7 @@ async function loadDocument() {
     renderMusicAdmin();
     renderContactsAdmin();
     renderTranslationsAdmin();
-    setMessage('save-message', snapshot.exists() ? 'โหลดข้อมูลจาก Firebase แล้ว' : 'กำลังใช้ข้อมูลเริ่มต้น · บันทึกเพื่อสร้างเอกสาร');
+    setMessage('save-message', response.ok ? 'โหลดข้อมูลที่เผยแพร่แล้ว' : 'กำลังใช้ข้อมูลเริ่มต้น · บันทึกเพื่อเผยแพร่ครั้งแรก');
   } catch (error) {
     $('content-json').value = JSON.stringify(fallbackContent, null, 2);
     $('music-title-input').value = fallbackContent.music?.title || '';
@@ -136,7 +135,7 @@ async function loadDocument() {
     renderMusicAdmin();
     renderContactsAdmin();
     renderTranslationsAdmin();
-    setMessage('save-message', `เปิดข้อมูลเริ่มต้นให้แก้ไขได้ · Firebase ยังไม่พร้อมบันทึก (${error.message})`, true);
+    setMessage('save-message', `เปิดข้อมูลเริ่มต้นให้แก้ไขได้ · ระบบจัดเก็บข้อมูลยังไม่พร้อม (${error.message})`, true);
   }
 }
 
@@ -162,14 +161,23 @@ async function save() {
     for (const key of ['commission', 'addons', 'gallery', 'terms', 'socials']) if (data[key] !== undefined && !Array.isArray(data[key])) throw new Error(`ฟิลด์ ${key} ต้องเป็นรายการ (array)`);
     for (const item of data.commission || []) if (item.video) commissionMedia(item.video);
     setMessage('save-message', 'กำลังบันทึก…');
-    const { auth, db, doc, setDoc } = await connectFirebase();
+    const { auth } = await connectFirebase();
     const user = auth.currentUser;
     if (!user || !user.emailVerified || user.email?.toLowerCase() !== adminEmail) throw new Error('บัญชีผู้ใช้ไม่มีสิทธิ์บันทึก');
     let publishedData = structuredClone(data);
     publishedData.addons = (publishedData.addons || []).map(addonObject);
     publishedData.socials = (publishedData.socials || []).map(socialObject);
     publishedData = encodeFirestoreValue(publishedData);
-    await setDoc(doc(db, 'publicContent', 'site'), publishedData);
+    const token = await user.getIdToken();
+    const response = await fetch('/api/content', {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(publishedData)
+    });
+    if (!response.ok) {
+      const details = await response.json().catch(() => ({}));
+      throw new Error(details.message || `ระบบจัดเก็บข้อมูลตอบกลับ ${response.status}`);
+    }
     $('content-json').value = JSON.stringify(data, null, 2);
     $('queue-url-input').value = data.queue?.url || fallbackContent.queue.url;
     queueUrlDirty = false;
